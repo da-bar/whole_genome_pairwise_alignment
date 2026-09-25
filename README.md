@@ -64,7 +64,17 @@ Contributions to the pipeline are welcome. Please raise an issue or a pull reque
 
 ## License
 
-This software is available under the MIT license. Please refer to the LICENSE file in the repository for more details.
+This software is available under the MIT license. Please refer to the [LICENSE](LICENSE) file in the repository for more details.
+
+## Third-party software
+
+This pipeline relies on external tools: CNEr, kentUtils, and the LAST aligner. It does not distribute these tools or incorporate their source code. Users are responsible for obtaining them and complying with their licences independently:
+
+- **CNEr** is used for handling genomic alignment data. Users should adhere to the terms and conditions set forth by the authors of CNEr.
+- **kentUtils** is a suite of biological analysis and web display programs developed by the UCSC Genome Bioinformatics Group and Jim Kent. Use of these utilities through this pipeline should comply with their licensing terms.
+- **LAST** is used for sequence alignment. Users should comply with the licensing terms of the LAST aligner.
+
+Users intending to use this pipeline for commercial purposes should consult and adhere to the licensing terms of CNEr, kentUtils, and the LAST aligner, as this pipeline operates in conjunction with these tools.
 
 ## Citation
 
