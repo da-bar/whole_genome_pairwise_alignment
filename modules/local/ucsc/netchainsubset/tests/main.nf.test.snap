@@ -42,30 +42,15 @@
     },
     "yeast_small - net, chain": {
         "content": [
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "test.chain.gz"
+                ]
+            ],
             {
-                "0": [
-                    [
-                        {
-                            "id": "test"
-                        },
-                        "test.chain.gz:md5,af5397e2a9d6e98414902a615e9bd36e"
-                    ]
-                ],
-                "1": [
-                    [
-                        "UCSC_NETCHAINSUBSET",
-                        "ucsc",
-                        "482"
-                    ]
-                ],
-                "chain": [
-                    [
-                        {
-                            "id": "test"
-                        },
-                        "test.chain.gz:md5,af5397e2a9d6e98414902a615e9bd36e"
-                    ]
-                ],
                 "versions_ucsc": [
                     [
                         "UCSC_NETCHAINSUBSET",
@@ -75,7 +60,7 @@
                 ]
             }
         ],
-        "timestamp": "2026-09-25T10:24:40.569648",
+        "timestamp": "2026-09-25T13:20:46.364985",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"

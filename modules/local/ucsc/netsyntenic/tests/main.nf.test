@@ -10,31 +10,35 @@ nextflow_process {
 
     // Fixtures live in <repo>/tests/data/yeast_small. In nf-test, "${projectDir}" inside the
     // test file resolves to the directory holding nf-test.config (the repository root).
+    //
+    // The chain, net and axt inputs and references depend on the platform (axtChain orders chains of equal score
+    // differently on macOS and Linux): they are in tests/data/yeast_small/platform/<platform>/
+    // (tests/lib/PlatformReferences.groovy), and the snapshots only hold the output names and versions.
 
     test("yeast_small - target.net") {
 
         when {
+            def fixtures = PlatformReferences.dir(projectDir, 'yeast_small')
             process {
                 """
                 input[0] = channel.of([
                     [ id:'test' ], // meta map
-                    file("${projectDir}/tests/data/yeast_small/small.target.net", checkIfExists: true)
+                    file("${fixtures}/small.target.net", checkIfExists: true)
                 ])
                 """
             }
         }
 
         then {
-            // Parity with v1 (CNEr): md5 of the decompressed output must equal the v1-made fixture
+            // Parity with v1 (CNEr): md5 of the decompressed output must equal the v1-made fixture of this platform
             def gunzip_md5 = { f -> new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { it.bytes.md5() } }
             def out_md5 = gunzip_md5(process.out.net[0][1])
-            def v1_md5  = new File("${projectDir}/tests/data/yeast_small/small.noClass.net").bytes.md5()
+            def v1_md5  = new File(PlatformReferences.file(projectDir, 'yeast_small', 'small.noClass.net')).bytes.md5()
             assertAll(
                 { assert process.success },
                 { assert out_md5 == v1_md5 },
                 { assert snapshot(
-                    process.out.net,
-                    out_md5,
+                    PlatformReferences.fileNames(process.out.net),
                     process.out.findAll { key, val -> key.startsWith('versions') }
                 ).match() }
             )
@@ -45,11 +49,12 @@ nextflow_process {
         options "-stub"
 
         when {
+            def fixtures = PlatformReferences.dir(projectDir, 'yeast_small')
             process {
                 """
                 input[0] = channel.of([
                     [ id:'test' ], // meta map
-                    file("${projectDir}/tests/data/yeast_small/small.target.net", checkIfExists: true)
+                    file("${fixtures}/small.target.net", checkIfExists: true)
                 ])
                 """
             }

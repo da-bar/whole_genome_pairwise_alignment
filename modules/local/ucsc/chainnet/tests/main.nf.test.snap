@@ -6,7 +6,7 @@
                     {
                         "id": "test"
                     },
-                    "test.target.net.gz:md5,7be3e918f0cedb30857dafd788fff212"
+                    "test.target.net.gz"
                 ]
             ],
             [
@@ -14,11 +14,9 @@
                     {
                         "id": "test"
                     },
-                    "test.query.net.gz:md5,4e6ac01a4af2ed4b2953bc9a15926a64"
+                    "test.query.net.gz"
                 ]
             ],
-            "7be3e918f0cedb30857dafd788fff212",
-            "4e6ac01a4af2ed4b2953bc9a15926a64",
             {
                 "versions_ucsc": [
                     [
@@ -29,7 +27,7 @@
                 ]
             }
         ],
-        "timestamp": "2026-09-25T10:22:52.733227",
+        "timestamp": "2026-09-25T13:20:22.431233",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"

@@ -14,27 +14,35 @@ nextflow_process {
     // Fixtures: tests/data/yeast_small (made with the v1.0.0 CNEr command lines).
     // projectDir resolves to the repository root (the nf-test.config directory),
     // both inside the Nextflow process block and in the nf-test then block.
+    //
+    // The chain, net and axt inputs and references depend on the platform (axtChain orders chains of equal score
+    // differently on macOS and Linux): they are in tests/data/yeast_small/platform/<platform>/
+    // (tests/lib/PlatformReferences.groovy), and the snapshots only hold the output names and versions.
 
     test("yeast_small - axt") {
 
         when {
+            def fixtures = PlatformReferences.dir(projectDir, 'yeast_small')
             process {
                 """
                 input[0] = [
                     [ id:'test' ], // meta map
-                    file("${projectDir}/tests/data/yeast_small/small.unsorted.axt", checkIfExists: true)
+                    file("${fixtures}/small.unsorted.axt", checkIfExists: true)
                 ]
                 """
             }
         }
 
         then {
-            // v1 parity: decompressed output must be byte-identical to the v1 axtSort output
+            // v1 parity: decompressed output must be byte-identical to the v1 axtSort output of this platform
             def gunzipMd5 = { f -> new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { it.bytes.md5() } }
-            def v1_md5 = path("${projectDir}/tests/data/yeast_small/small.net.axt").bytes.md5()
+            def v1_md5 = path(PlatformReferences.file(projectDir, 'yeast_small', 'small.net.axt')).bytes.md5()
             assertAll(
                 { assert process.success },
-                { assert snapshot(process.out).match() },
+                { assert snapshot(
+                    PlatformReferences.fileNames(process.out.axt),
+                    process.out.findAll { key, val -> key.startsWith('versions') }
+                ).match() },
                 { assert gunzipMd5(process.out.axt[0][1]) == v1_md5 }
             )
         }
@@ -43,14 +51,15 @@ nextflow_process {
     test("yeast_small - axt.gz from UCSC_NETTOAXT") {
 
         setup {
+            def fixtures = PlatformReferences.dir(projectDir, 'yeast_small')
             run("UCSC_NETTOAXT") {
                 script "../../nettoaxt/main.nf"
                 process {
                     """
                     input[0] = [
                         [ id:'test' ], // meta map
-                        file("${projectDir}/tests/data/yeast_small/small.noClass.net", checkIfExists: true),
-                        file("${projectDir}/tests/data/yeast_small/small.all.pre.chain", checkIfExists: true),
+                        file("${fixtures}/small.noClass.net", checkIfExists: true),
+                        file("${fixtures}/small.all.pre.chain", checkIfExists: true),
                         file("${projectDir}/tests/data/yeast_small/scer_small.2bit", checkIfExists: true),
                         file("${projectDir}/tests/data/yeast_small/seub_small.2bit", checkIfExists: true)
                     ]
@@ -69,10 +78,13 @@ nextflow_process {
 
         then {
             def gunzipMd5 = { f -> new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { it.bytes.md5() } }
-            def v1_md5 = path("${projectDir}/tests/data/yeast_small/small.net.axt").bytes.md5()
+            def v1_md5 = path(PlatformReferences.file(projectDir, 'yeast_small', 'small.net.axt')).bytes.md5()
             assertAll(
                 { assert process.success },
-                { assert snapshot(process.out).match() },
+                { assert snapshot(
+                    PlatformReferences.fileNames(process.out.axt),
+                    process.out.findAll { key, val -> key.startsWith('versions') }
+                ).match() },
                 { assert gunzipMd5(process.out.axt[0][1]) == v1_md5 }
             )
         }
@@ -83,11 +95,12 @@ nextflow_process {
         options "-stub"
 
         when {
+            def fixtures = PlatformReferences.dir(projectDir, 'yeast_small')
             process {
                 """
                 input[0] = [
                     [ id:'test' ], // meta map
-                    file("${projectDir}/tests/data/yeast_small/small.unsorted.axt", checkIfExists: true)
+                    file("${fixtures}/small.unsorted.axt", checkIfExists: true)
                 ]
                 """
             }

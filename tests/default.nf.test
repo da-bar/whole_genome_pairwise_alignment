@@ -10,6 +10,11 @@ nextflow_pipeline {
     //
     // LAST_LASTAL runs with one thread (conf/base.config): with lastal -P > 1 the MAF block order, and
     // hence every chain, net and axt file, can change from run to run.
+    //
+    // The MAF, PSL, 2bit and sizes files are the same on every platform; the chain, net, axt and liftOver files
+    // are not (axtChain orders chains of equal score differently on macOS and Linux). Those are compared with the
+    // references of this platform in tests/data/yeast/platform/<platform>/ (tests/lib/PlatformReferences.groovy)
+    // and left out of the snapshot.
 
     test("-profile test") {
 
@@ -26,14 +31,13 @@ nextflow_pipeline {
         }
 
         then {
-            // v1.0.0 reference checksums: "<md5>  <file name>"; the maf.body entry is the md5 of the MAF without its '#' lines
-            def v1 = [:]
-            new File("${projectDir}/tests/data/yeast/v1.0.0_md5.txt").eachLine { line ->
-                if (line.trim() && !line.startsWith('#')) {
-                    def fields = line.trim().split(/\s+/)
-                    v1[fields[1]] = fields[0]
-                }
-            }
+            // v1.0.0 reference checksums, "<md5>  <file name>": tests/data/yeast/v1.0.0_md5.txt for the files that are the
+            // same on every platform, platform/<platform>/v1.0.0_md5.txt for the chain, net and axt files of v1.0.0 on this
+            // platform. The maf.body entry is the md5 of the MAF without its '#' lines.
+            def platform = PlatformReferences.dir(projectDir, 'yeast')
+            def v1 = PlatformReferences.md5("${projectDir}/tests/data/yeast/v1.0.0_md5.txt", "${platform}/v1.0.0_md5.txt")
+            // Files that v2 publishes and v1.0.0 did not keep, made with the v1.0.0 command lines on this platform
+            def v1_commands = PlatformReferences.md5("${platform}/md5.txt")
             def gunzip_md5 = { f ->
                 new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { gz -> gz.bytes.md5() }
             }
@@ -70,13 +74,22 @@ nextflow_pipeline {
                 { assert path("${params.outdir}/genomes/S_eubayanus.2bit").md5         == v1['S_eubayanus.2bit'] },
                 // v1 ran axtChain on the single PSL, so its chains are the all.chain
                 { assert gunzip_md5("${pair}/chains/${stem}.chain.gz")                 == v1["${stem}.all.chain"] },
+                // The target and query nets, which v1.0.0 made but did not keep, and the liftOver chain
+                { assert gunzip_md5("${pair}/nets/${stem}.target.net.gz")              == v1_commands["${stem}.target.net"] },
+                { assert gunzip_md5("${pair}/nets/${stem}.query.net.gz")               == v1_commands["${stem}.query.net"] },
+                { assert gunzip_md5("${pair}/liftover/S_cerevisiaeToS_eubayanus.over.chain.gz") == v1_commands['S_cerevisiaeToS_eubayanus.over.chain'] },
+                // These are all the platform-dependent files, so the snapshot can leave them out
+                { assert PlatformReferences.platformDependentNames(stable_content) == [
+                    "${stem}.all.chain.gz", "${stem}.all.pre.chain.gz", "${stem}.chain.gz", "${stem}.net.axt.gz",
+                    "${stem}.noClass.net.gz", "${stem}.query.net.gz", "${stem}.target.net.gz", 'S_cerevisiaeToS_eubayanus.over.chain.gz',
+                ].collect { name -> name.toString() }.sort() },
                 { assert snapshot(
                     // pipeline versions.yml file from which Nextflow version is removed because we test pipelines on multiple Nextflow versions
                     removeNextflowVersion("$outputDir/pipeline_info/wgpa_software_versions.yml"),
                     // All stable path name, with a relative path
                     stable_path,
-                    // All files with stable contents
-                    stable_content
+                    // All files with stable contents that do not depend on the platform (MAF, PSL, LAST statistics, 2bit, sizes)
+                    PlatformReferences.platformIndependent(stable_content)
                 ).match() }
             )
         }

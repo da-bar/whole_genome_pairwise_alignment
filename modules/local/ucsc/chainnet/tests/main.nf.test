@@ -10,15 +10,20 @@ nextflow_process {
 
     // Fixtures live in <repo>/tests/data/yeast_small. In nf-test, "${projectDir}" inside the
     // test file resolves to the directory holding nf-test.config (the repository root).
+    //
+    // The chain, net and axt inputs and references depend on the platform (axtChain orders chains of equal score
+    // differently on macOS and Linux): they are in tests/data/yeast_small/platform/<platform>/
+    // (tests/lib/PlatformReferences.groovy), and the snapshots only hold the output names and versions.
 
     test("yeast_small - all.pre.chain") {
 
         when {
+            def fixtures = PlatformReferences.dir(projectDir, 'yeast_small')
             process {
                 """
                 input[0] = channel.of([
                     [ id:'test' ], // meta map
-                    file("${projectDir}/tests/data/yeast_small/small.all.pre.chain", checkIfExists: true),
+                    file("${fixtures}/small.all.pre.chain", checkIfExists: true),
                     file("${projectDir}/tests/data/yeast_small/scer_small.sizes", checkIfExists: true),
                     file("${projectDir}/tests/data/yeast_small/seub_small.sizes", checkIfExists: true)
                 ])
@@ -27,21 +32,19 @@ nextflow_process {
         }
 
         then {
-            // Parity with v1 (CNEr): md5 of each decompressed net must equal the v1-made fixture
+            // Parity with v1 (CNEr): md5 of each decompressed net must equal the v1-made fixture of this platform
             def gunzip_md5 = { f -> new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { it.bytes.md5() } }
             def target_md5    = gunzip_md5(process.out.target_net[0][1])
             def query_md5     = gunzip_md5(process.out.query_net[0][1])
-            def v1_target_md5 = new File("${projectDir}/tests/data/yeast_small/small.target.net").bytes.md5()
-            def v1_query_md5  = new File("${projectDir}/tests/data/yeast_small/small.query.net").bytes.md5()
+            def v1_target_md5 = new File(PlatformReferences.file(projectDir, 'yeast_small', 'small.target.net')).bytes.md5()
+            def v1_query_md5  = new File(PlatformReferences.file(projectDir, 'yeast_small', 'small.query.net')).bytes.md5()
             assertAll(
                 { assert process.success },
                 { assert target_md5 == v1_target_md5 },
                 { assert query_md5 == v1_query_md5 },
                 { assert snapshot(
-                    process.out.target_net,
-                    process.out.query_net,
-                    target_md5,
-                    query_md5,
+                    PlatformReferences.fileNames(process.out.target_net),
+                    PlatformReferences.fileNames(process.out.query_net),
                     process.out.findAll { key, val -> key.startsWith('versions') }
                 ).match() }
             )
@@ -52,11 +55,12 @@ nextflow_process {
         options "-stub"
 
         when {
+            def fixtures = PlatformReferences.dir(projectDir, 'yeast_small')
             process {
                 """
                 input[0] = channel.of([
                     [ id:'test' ], // meta map
-                    file("${projectDir}/tests/data/yeast_small/small.all.pre.chain", checkIfExists: true),
+                    file("${fixtures}/small.all.pre.chain", checkIfExists: true),
                     file("${projectDir}/tests/data/yeast_small/scer_small.sizes", checkIfExists: true),
                     file("${projectDir}/tests/data/yeast_small/seub_small.sizes", checkIfExists: true)
                 ])

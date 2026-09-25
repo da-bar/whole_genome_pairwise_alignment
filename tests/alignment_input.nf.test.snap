@@ -98,28 +98,12 @@
                 "seub_small.2bit:md5,07aad47629b630c27a5fef09f221931e",
                 "seub_small.sizes:md5,1b182cfd4b3986e0a5ca2d2aa00a05d4",
                 "scer_small_seub_small.psl.gz:md5,6cd0579523b4941880fa24fff7b9425f",
-                "scer_small_seub_small.net.axt.gz:md5,aceff596f42c905451305726d1bac8ef",
-                "scer_small_seub_small.all.chain.gz:md5,73cced58a51f7998e6eec7c025c28c89",
-                "scer_small_seub_small.all.pre.chain.gz:md5,ad161a5b7d4b34453b1ee0f9e9ae43fa",
-                "scer_small_seub_small.chain.gz:md5,73cced58a51f7998e6eec7c025c28c89",
-                "scer_smallToSeub_small.over.chain.gz:md5,0f64eabd1bb9c65ddceca4ec27effdf3",
-                "scer_small_seub_small.noClass.net.gz:md5,18b7f9969a71b23cf37bc12e2a690d05",
-                "scer_small_seub_small.query.net.gz:md5,4e6ac01a4af2ed4b2953bc9a15926a64",
-                "scer_small_seub_small.target.net.gz:md5,7be3e918f0cedb30857dafd788fff212",
                 "seub_small_scer_small.maf.gz:md5,6046c9c8dc53e9f0df398ac0e7c92320",
                 "seub_small_scer_small.psl.gz:md5,eeeb85045d6ddfa26e69e9a47d735cc0",
-                "seub_small_scer_small.tsv:md5,4319a91cabdb4cdafae28b7e36e96880",
-                "seub_small_scer_small.net.axt.gz:md5,a98208c6fede98a2cdd7e04fe0c1a341",
-                "seub_small_scer_small.all.chain.gz:md5,bcc6063f10d6fab1cd7dae922b570ef4",
-                "seub_small_scer_small.all.pre.chain.gz:md5,8ee5250424596801d9c4bfaebc53731e",
-                "seub_small_scer_small.chain.gz:md5,bcc6063f10d6fab1cd7dae922b570ef4",
-                "seub_smallToScer_small.over.chain.gz:md5,c18e3f12845eebce4214a66b7968bd4c",
-                "seub_small_scer_small.noClass.net.gz:md5,eb1ef06cbc2eeb114b28f393dcbdb617",
-                "seub_small_scer_small.query.net.gz:md5,a15cbe020d841f7ccd81a812f8b5e8e3",
-                "seub_small_scer_small.target.net.gz:md5,e4f8a25faf68dba237a33b5bdeb0e9b5"
+                "seub_small_scer_small.tsv:md5,4319a91cabdb4cdafae28b7e36e96880"
             ]
         ],
-        "timestamp": "2026-09-25T12:31:10.360932",
+        "timestamp": "2026-09-25T13:21:24.323513",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"
@@ -200,18 +184,10 @@
                 "scer_small.sizes:md5,90acd33e72cd4ce059a3b7f04cc75b58",
                 "seub_small.2bit:md5,07aad47629b630c27a5fef09f221931e",
                 "seub_small.sizes:md5,1b182cfd4b3986e0a5ca2d2aa00a05d4",
-                "scer_small_seub_small.psl.gz:md5,6cd0579523b4941880fa24fff7b9425f",
-                "scer_small_seub_small.net.axt.gz:md5,aceff596f42c905451305726d1bac8ef",
-                "scer_small_seub_small.all.chain.gz:md5,73cced58a51f7998e6eec7c025c28c89",
-                "scer_small_seub_small.all.pre.chain.gz:md5,ad161a5b7d4b34453b1ee0f9e9ae43fa",
-                "scer_small_seub_small.chain.gz:md5,73cced58a51f7998e6eec7c025c28c89",
-                "scer_smallToSeub_small.over.chain.gz:md5,0f64eabd1bb9c65ddceca4ec27effdf3",
-                "scer_small_seub_small.noClass.net.gz:md5,18b7f9969a71b23cf37bc12e2a690d05",
-                "scer_small_seub_small.query.net.gz:md5,4e6ac01a4af2ed4b2953bc9a15926a64",
-                "scer_small_seub_small.target.net.gz:md5,7be3e918f0cedb30857dafd788fff212"
+                "scer_small_seub_small.psl.gz:md5,6cd0579523b4941880fa24fff7b9425f"
             ]
         ],
-        "timestamp": "2026-09-25T12:30:54.040367",
+        "timestamp": "2026-09-25T13:21:08.585631",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"
@@ -286,18 +262,10 @@
                 "scer_small.2bit:md5,5ba8d3df48e1825947760f9f7119e69d",
                 "scer_small.sizes:md5,90acd33e72cd4ce059a3b7f04cc75b58",
                 "seub_small.2bit:md5,07aad47629b630c27a5fef09f221931e",
-                "seub_small.sizes:md5,1b182cfd4b3986e0a5ca2d2aa00a05d4",
-                "scer_small_seub_small.net.axt.gz:md5,aceff596f42c905451305726d1bac8ef",
-                "scer_small_seub_small.all.chain.gz:md5,73cced58a51f7998e6eec7c025c28c89",
-                "scer_small_seub_small.all.pre.chain.gz:md5,ad161a5b7d4b34453b1ee0f9e9ae43fa",
-                "scer_small_seub_small.chain.gz:md5,73cced58a51f7998e6eec7c025c28c89",
-                "scer_smallToSeub_small.over.chain.gz:md5,0f64eabd1bb9c65ddceca4ec27effdf3",
-                "scer_small_seub_small.noClass.net.gz:md5,18b7f9969a71b23cf37bc12e2a690d05",
-                "scer_small_seub_small.query.net.gz:md5,4e6ac01a4af2ed4b2953bc9a15926a64",
-                "scer_small_seub_small.target.net.gz:md5,7be3e918f0cedb30857dafd788fff212"
+                "seub_small.sizes:md5,1b182cfd4b3986e0a5ca2d2aa00a05d4"
             ]
         ],
-        "timestamp": "2026-09-25T12:30:57.795946",
+        "timestamp": "2026-09-25T13:21:12.295922",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"

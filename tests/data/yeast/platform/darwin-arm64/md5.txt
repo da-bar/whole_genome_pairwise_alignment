@@ -1,0 +1,7 @@
+# Platform-dependent outputs of the v1.0.0 test pair that v2 publishes and v1.0.0 did not keep.
+# Platform darwin-arm64, made by tests/data/make_platform_fixtures.sh with the v1.0.0 command lines
+# (LAST 1652, kent 482). md5 of the uncompressed files: "<md5>  <file name>".
+# S_cerevisiae_S_eubayanus.chain (axtChain) is the same file as S_cerevisiae_S_eubayanus.all.chain (v1.0.0_md5.txt).
+7749a96a08d613f9c14354de70c4594a  S_cerevisiae_S_eubayanus.target.net
+07ce81c96ca26942c155bd952c796454  S_cerevisiae_S_eubayanus.query.net
+d313f2f3facb1485e69abbf893b41f97  S_cerevisiaeToS_eubayanus.over.chain

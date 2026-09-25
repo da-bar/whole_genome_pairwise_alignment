@@ -7,6 +7,11 @@ nextflow_pipeline {
 
     // Samplesheet cases that the default test does not cover, on the small yeast fixtures in tests/data/yeast_small.
     // Each test writes its samplesheet to its own launch directory.
+    //
+    // The chain, net, axt and liftOver files depend on the platform (axtChain orders chains of equal score
+    // differently on macOS and Linux): they are compared with the references of this platform in
+    // tests/data/yeast_small/platform/<platform>/md5.txt (tests/lib/PlatformReferences.groovy) and left out of
+    // the snapshots.
 
     test("self-alignment - yeast_small") {
 
@@ -28,6 +33,11 @@ nextflow_pipeline {
         then {
             def pair = "${params.outdir}/scer_small_self"
             def stem = 'scer_small_scer_small'
+            // md5s of the v1.0.0 commands for scer_small -> scer_small on this platform
+            def refs = PlatformReferences.md5(PlatformReferences.file(projectDir, 'yeast_small', 'md5.txt'))
+            def gunzip_md5 = { f ->
+                new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { gz -> gz.bytes.md5() }
+            }
             def gunzip_lines = { f ->
                 new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { gz -> gz.getText('UTF-8').readLines() }
             }
@@ -49,13 +59,27 @@ nextflow_pipeline {
                 { assert gunzip_lines("${pair}/nets/${stem}.noClass.net.gz").any { line -> line.startsWith('net ') } },
                 { assert gunzip_lines("${pair}/axt/${stem}.net.axt.gz").any { line -> line.trim() } },
                 { assert gunzip_lines("${pair}/liftover/scer_smallToScer_small.over.chain.gz").any { line -> line.startsWith('chain ') } },
+                // ... and are those of the v1.0.0 commands (the same file as target and query) on this platform
+                { assert gunzip_md5("${pair}/chains/${stem}.chain.gz")                   == refs["${stem}.chain"] },
+                { assert gunzip_md5("${pair}/chains/${stem}.all.chain.gz")               == refs["${stem}.all.chain"] },
+                { assert gunzip_md5("${pair}/chains/${stem}.all.pre.chain.gz")           == refs["${stem}.all.pre.chain"] },
+                { assert gunzip_md5("${pair}/nets/${stem}.target.net.gz")                == refs["${stem}.target.net"] },
+                { assert gunzip_md5("${pair}/nets/${stem}.query.net.gz")                 == refs["${stem}.query.net"] },
+                { assert gunzip_md5("${pair}/nets/${stem}.noClass.net.gz")               == refs["${stem}.noClass.net"] },
+                { assert gunzip_md5("${pair}/axt/${stem}.net.axt.gz")                    == refs["${stem}.net.axt"] },
+                { assert gunzip_md5("${pair}/liftover/scer_smallToScer_small.over.chain.gz") == refs['scer_smallToScer_small.over.chain'] },
+                // These are all the platform-dependent files, so the snapshot can leave them out
+                { assert PlatformReferences.platformDependentNames(stable_content) == [
+                    "${stem}.all.chain.gz", "${stem}.all.pre.chain.gz", "${stem}.chain.gz", "${stem}.net.axt.gz",
+                    "${stem}.noClass.net.gz", "${stem}.query.net.gz", "${stem}.target.net.gz", 'scer_smallToScer_small.over.chain.gz',
+                ].collect { name -> name.toString() }.sort() },
                 { assert snapshot(
                     // pipeline versions.yml file from which Nextflow version is removed because we test pipelines on multiple Nextflow versions
                     removeNextflowVersion("$outputDir/pipeline_info/wgpa_software_versions.yml"),
                     // All stable path name, with a relative path
                     stable_path,
-                    // All files with stable contents
-                    stable_content
+                    // All files with stable contents that do not depend on the platform
+                    PlatformReferences.platformIndependent(stable_content)
                 ).match() }
             )
         }

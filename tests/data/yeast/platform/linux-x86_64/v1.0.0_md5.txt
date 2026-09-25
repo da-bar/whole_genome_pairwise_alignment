@@ -1,0 +1,8 @@
+# Platform-dependent v1.0.0 outputs of the v1.0.0 test pair (S_cerevisiae target, S_eubayanus query, near).
+# Platform linux-x86_64, made by tests/data/make_platform_fixtures.sh with the v1.0.0 command lines
+# (LAST 1652, kent 482). md5 of the uncompressed files: "<md5>  <file name>".
+# The platform-independent ones (MAF, PSL, 2bit) are in tests/data/yeast/v1.0.0_md5.txt.
+301193d01ed4b9f56bc2ba39b830dd88  S_cerevisiae_S_eubayanus.all.chain
+d21474fcdced49585427ede1cb7b3191  S_cerevisiae_S_eubayanus.all.pre.chain
+8927908de1d33c9e15710d3ef1db3117  S_cerevisiae_S_eubayanus.noClass.net
+6fc6f11f5de04eb195e3914e11461e03  S_cerevisiae_S_eubayanus.net.axt

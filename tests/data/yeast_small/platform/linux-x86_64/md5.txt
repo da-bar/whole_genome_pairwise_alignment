@@ -1,0 +1,24 @@
+# Platform-dependent outputs of the yeast_small tests that are not kept as files here.
+# Platform linux-x86_64, made by tests/data/make_platform_fixtures.sh with the v1.0.0 command lines
+# (LAST 1652, kent 482). md5 of the uncompressed files: "<md5>  <file name>".
+# small.noScoreScheme.chain: axtChain as small.chain, without -scoreScheme.
+# small.3parts.all.chain: chainMergeSort of small.chain split round-robin into three files.
+# seub_small_scer_small.*, scer_small_scer_small.*: the pairs seub_small->scer_small and scer_small->scer_small.
+48e957eaf88e10802d55706664fa64b8  small.noScoreScheme.chain
+085cb423a79bf4b65c99b22f462e3ed3  small.3parts.all.chain
+a0e3d2a0f78f9eac0a039662a34338eb  seub_small_scer_small.chain
+a0e3d2a0f78f9eac0a039662a34338eb  seub_small_scer_small.all.chain
+90f02926cfceba8e04f1805c7628e6ec  seub_small_scer_small.all.pre.chain
+10df36c13dd1e2d0ecefeea5865f61dc  seub_small_scer_small.target.net
+05cb0d735d2773c16ea88c10f753ebe5  seub_small_scer_small.query.net
+07a7d8f8029f4020211cd997da8e0111  seub_small_scer_small.noClass.net
+a98208c6fede98a2cdd7e04fe0c1a341  seub_small_scer_small.net.axt
+949c33c06ad0e922be4d0f4267aa5e1a  scer_small_scer_small.chain
+949c33c06ad0e922be4d0f4267aa5e1a  scer_small_scer_small.all.chain
+c10f3b2092f55b2de21c59fa99e76057  scer_small_scer_small.all.pre.chain
+fc45f84d60b839b29b2b8770584a17cf  scer_small_scer_small.target.net
+fc45f84d60b839b29b2b8770584a17cf  scer_small_scer_small.query.net
+89b5a9d2581c6f9c99832815f9607db3  scer_small_scer_small.noClass.net
+22fae4dac4ef71f9b93d38e0035a640c  scer_small_scer_small.net.axt
+cc78e859bc7ed7206bf3d83ef2221aa2  seub_smallToScer_small.over.chain
+7a1c2990460d1c43d984a258dc96f471  scer_smallToScer_small.over.chain

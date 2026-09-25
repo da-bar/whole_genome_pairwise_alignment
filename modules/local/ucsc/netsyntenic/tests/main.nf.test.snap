@@ -6,10 +6,9 @@
                     {
                         "id": "test"
                     },
-                    "test.net.gz:md5,18b7f9969a71b23cf37bc12e2a690d05"
+                    "test.net.gz"
                 ]
             ],
-            "18b7f9969a71b23cf37bc12e2a690d05",
             {
                 "versions_ucsc": [
                     [
@@ -20,7 +19,7 @@
                 ]
             }
         ],
-        "timestamp": "2026-09-25T10:22:59.341096",
+        "timestamp": "2026-09-25T13:20:51.460331",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"

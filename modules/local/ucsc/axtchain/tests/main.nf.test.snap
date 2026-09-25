@@ -1,30 +1,15 @@
 {
     "yeast_small - psl.gz - near": {
         "content": [
+            [
+                [
+                    {
+                        "id": "small"
+                    },
+                    "small.chain.gz"
+                ]
+            ],
             {
-                "0": [
-                    [
-                        {
-                            "id": "small"
-                        },
-                        "small.chain.gz:md5,73cced58a51f7998e6eec7c025c28c89"
-                    ]
-                ],
-                "1": [
-                    [
-                        "UCSC_AXTCHAIN",
-                        "ucsc",
-                        "482"
-                    ]
-                ],
-                "chain": [
-                    [
-                        {
-                            "id": "small"
-                        },
-                        "small.chain.gz:md5,73cced58a51f7998e6eec7c025c28c89"
-                    ]
-                ],
                 "versions_ucsc": [
                     [
                         "UCSC_AXTCHAIN",
@@ -34,7 +19,7 @@
                 ]
             }
         ],
-        "timestamp": "2026-09-25T10:24:48.717415",
+        "timestamp": "2026-09-25T13:15:29.001735",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"
@@ -83,30 +68,15 @@
     },
     "yeast_small - psl - default score scheme": {
         "content": [
+            [
+                [
+                    {
+                        "id": "small"
+                    },
+                    "small.chain.gz"
+                ]
+            ],
             {
-                "0": [
-                    [
-                        {
-                            "id": "small"
-                        },
-                        "small.chain.gz:md5,9af9b6b0a09166160298faa7e6355bd6"
-                    ]
-                ],
-                "1": [
-                    [
-                        "UCSC_AXTCHAIN",
-                        "ucsc",
-                        "482"
-                    ]
-                ],
-                "chain": [
-                    [
-                        {
-                            "id": "small"
-                        },
-                        "small.chain.gz:md5,9af9b6b0a09166160298faa7e6355bd6"
-                    ]
-                ],
                 "versions_ucsc": [
                     [
                         "UCSC_AXTCHAIN",
@@ -116,7 +86,7 @@
                 ]
             }
         ],
-        "timestamp": "2026-09-25T10:24:51.502584",
+        "timestamp": "2026-09-25T13:15:32.114486",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"
@@ -124,30 +94,15 @@
     },
     "yeast_small - psl - near": {
         "content": [
+            [
+                [
+                    {
+                        "id": "small"
+                    },
+                    "small.chain.gz"
+                ]
+            ],
             {
-                "0": [
-                    [
-                        {
-                            "id": "small"
-                        },
-                        "small.chain.gz:md5,73cced58a51f7998e6eec7c025c28c89"
-                    ]
-                ],
-                "1": [
-                    [
-                        "UCSC_AXTCHAIN",
-                        "ucsc",
-                        "482"
-                    ]
-                ],
-                "chain": [
-                    [
-                        {
-                            "id": "small"
-                        },
-                        "small.chain.gz:md5,73cced58a51f7998e6eec7c025c28c89"
-                    ]
-                ],
                 "versions_ucsc": [
                     [
                         "UCSC_AXTCHAIN",
@@ -157,7 +112,7 @@
                 ]
             }
         ],
-        "timestamp": "2026-09-25T10:24:45.870625",
+        "timestamp": "2026-09-25T13:15:26.333681",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"

@@ -11,6 +11,11 @@ nextflow_process {
 
     // In nf-test, ${projectDir} (alias ${baseDir}) is the pipeline root, i.e. the directory holding nf-test.config.
     // It is interpolated by nf-test before the process block is handed to Nextflow.
+    //
+    // The inputs (small.psl, 2bit files) are the same on every platform. The chains are not: axtChain orders chains of
+    // equal score differently on macOS and Linux. The tests compare them with the references of this platform in
+    // tests/data/yeast_small/platform/<platform>/ (tests/lib/PlatformReferences.groovy), and the snapshots only
+    // hold the output names and versions.
 
     test("yeast_small - psl - near") {
 
@@ -30,11 +35,15 @@ nextflow_process {
 
         then {
             def gunzip_md5 = { f -> new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { it.bytes.md5() } }
+            def v1_chain = PlatformReferences.file(projectDir, 'yeast_small', 'small.chain')
             assertAll(
                 { assert process.success },
-                { assert snapshot(process.out).match() },
-                // Parity with v1: the decompressed chain must be byte-identical to the v1-made fixture
-                { assert gunzip_md5(process.out.chain[0][1]) == path("${projectDir}/tests/data/yeast_small/small.chain").md5 }
+                { assert snapshot(
+                    PlatformReferences.fileNames(process.out.chain),
+                    process.out.findAll { key, val -> key.startsWith('versions') }
+                ).match() },
+                // Parity with v1: the decompressed chain must be byte-identical to the v1-made fixture of this platform
+                { assert gunzip_md5(process.out.chain[0][1]) == path(v1_chain).md5 }
             )
         }
     }
@@ -64,11 +73,15 @@ nextflow_process {
 
         then {
             def gunzip_md5 = { f -> new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { it.bytes.md5() } }
+            def v1_chain = PlatformReferences.file(projectDir, 'yeast_small', 'small.chain')
             assertAll(
                 { assert process.success },
-                { assert snapshot(process.out).match() },
+                { assert snapshot(
+                    PlatformReferences.fileNames(process.out.chain),
+                    process.out.findAll { key, val -> key.startsWith('versions') }
+                ).match() },
                 // A gzipped PSL must give the same chains as the plain PSL (and as v1)
-                { assert gunzip_md5(process.out.chain[0][1]) == path("${projectDir}/tests/data/yeast_small/small.chain").md5 }
+                { assert gunzip_md5(process.out.chain[0][1]) == path(v1_chain).md5 }
             )
         }
     }
@@ -91,11 +104,18 @@ nextflow_process {
 
         then {
             def gunzip_md5 = { f -> new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { it.bytes.md5() } }
+            def v1_chain = PlatformReferences.file(projectDir, 'yeast_small', 'small.chain')
+            def refs = PlatformReferences.md5(PlatformReferences.file(projectDir, 'yeast_small', 'md5.txt'))
             assertAll(
                 { assert process.success },
-                { assert snapshot(process.out).match() },
+                { assert snapshot(
+                    PlatformReferences.fileNames(process.out.chain),
+                    process.out.findAll { key, val -> key.startsWith('versions') }
+                ).match() },
                 // Without -scoreScheme axtChain uses its built-in matrix, so the chains differ from v1's near preset
-                { assert gunzip_md5(process.out.chain[0][1]) != path("${projectDir}/tests/data/yeast_small/small.chain").md5 },
+                { assert gunzip_md5(process.out.chain[0][1]) != path(v1_chain).md5 },
+                // ... and are those of the same command (without -scoreScheme) on this platform
+                { assert gunzip_md5(process.out.chain[0][1]) == refs['small.noScoreScheme.chain'] },
                 { assert !new File(new File(process.out.chain[0][1].toString()).parentFile, '.command.sh').text.contains('-scoreScheme') }
             )
         }

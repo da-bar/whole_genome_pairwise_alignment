@@ -15,6 +15,11 @@ nextflow_pipeline {
     // LAST_LASTAL writes it. 'maf-convert psl' of it gives small.psl, so a pair that starts from it, or from
     // small.psl, must give every other yeast_small fixture byte for byte.
     // Each test writes its samplesheet to its own launch directory.
+    //
+    // The 2bit, sizes, MAF and PSL fixtures are the same on every platform; the chain, net, axt and liftOver files
+    // are not (axtChain orders chains of equal score differently on macOS and Linux). Those are compared with the
+    // references of this platform in tests/data/yeast_small/platform/<platform>/ (tests/lib/PlatformReferences.groovy)
+    // and left out of the snapshots.
 
     test("alignment input - MAF - yeast_small") {
 
@@ -32,6 +37,7 @@ nextflow_pipeline {
 
         then {
             def fixtures = "${projectDir}/tests/data/yeast_small"
+            def platform = PlatformReferences.dir(projectDir, 'yeast_small')
             def pair = "${params.outdir}/scer_seub_maf"
             def stem = 'scer_small_seub_small'
             def gunzip_md5 = { f ->
@@ -56,21 +62,26 @@ nextflow_pipeline {
                 { assert path("${params.outdir}/genomes/scer_small.sizes").md5           == path("${fixtures}/scer_small.sizes").md5 },
                 { assert path("${params.outdir}/genomes/seub_small.sizes").md5           == path("${fixtures}/seub_small.sizes").md5 },
                 { assert gunzip_md5("${pair}/alignment/${stem}.psl.gz")                  == path("${fixtures}/small.psl").md5 },
-                { assert gunzip_md5("${pair}/chains/${stem}.chain.gz")                   == path("${fixtures}/small.chain").md5 },
-                { assert gunzip_md5("${pair}/chains/${stem}.all.chain.gz")               == path("${fixtures}/small.all.chain").md5 },
-                { assert gunzip_md5("${pair}/chains/${stem}.all.pre.chain.gz")           == path("${fixtures}/small.all.pre.chain").md5 },
-                { assert gunzip_md5("${pair}/nets/${stem}.target.net.gz")                == path("${fixtures}/small.target.net").md5 },
-                { assert gunzip_md5("${pair}/nets/${stem}.query.net.gz")                 == path("${fixtures}/small.query.net").md5 },
-                { assert gunzip_md5("${pair}/nets/${stem}.noClass.net.gz")               == path("${fixtures}/small.noClass.net").md5 },
-                { assert gunzip_md5("${pair}/axt/${stem}.net.axt.gz")                    == path("${fixtures}/small.net.axt").md5 },
-                { assert gunzip_md5("${pair}/liftover/scer_smallToSeub_small.over.chain.gz") == path("${fixtures}/small.over.chain").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.chain.gz")                   == path("${platform}/small.chain").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.all.chain.gz")               == path("${platform}/small.all.chain").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.all.pre.chain.gz")           == path("${platform}/small.all.pre.chain").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.target.net.gz")                == path("${platform}/small.target.net").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.query.net.gz")                 == path("${platform}/small.query.net").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.noClass.net.gz")               == path("${platform}/small.noClass.net").md5 },
+                { assert gunzip_md5("${pair}/axt/${stem}.net.axt.gz")                    == path("${platform}/small.net.axt").md5 },
+                { assert gunzip_md5("${pair}/liftover/scer_smallToSeub_small.over.chain.gz") == path("${platform}/small.over.chain").md5 },
+                // These are all the platform-dependent files, so the snapshot can leave them out
+                { assert PlatformReferences.platformDependentNames(stable_content) == [
+                    "${stem}.all.chain.gz", "${stem}.all.pre.chain.gz", "${stem}.chain.gz", "${stem}.net.axt.gz",
+                    "${stem}.noClass.net.gz", "${stem}.query.net.gz", "${stem}.target.net.gz", 'scer_smallToSeub_small.over.chain.gz',
+                ].collect { name -> name.toString() }.sort() },
                 { assert snapshot(
                     // pipeline versions.yml file from which Nextflow version is removed because we test pipelines on multiple Nextflow versions
                     removeNextflowVersion("$outputDir/pipeline_info/wgpa_software_versions.yml"),
                     // All stable path name, with a relative path
                     stable_path,
-                    // All files with stable contents
-                    stable_content
+                    // All files with stable contents that do not depend on the platform
+                    PlatformReferences.platformIndependent(stable_content)
                 ).match() }
             )
         }
@@ -92,6 +103,7 @@ nextflow_pipeline {
 
         then {
             def fixtures = "${projectDir}/tests/data/yeast_small"
+            def platform = PlatformReferences.dir(projectDir, 'yeast_small')
             def pair = "${params.outdir}/scer_seub_psl"
             def stem = 'scer_small_seub_small'
             def gunzip_md5 = { f ->
@@ -107,18 +119,23 @@ nextflow_pipeline {
                 { assert tasks.count { name -> name.contains(':CHECK_ALIGNMENT') } == 1 },
                 { assert !new File("${pair}/alignment").exists() },
                 // Parity with the yeast_small fixtures (v1.0.0 commands), after decompression
-                { assert gunzip_md5("${pair}/chains/${stem}.chain.gz")                   == path("${fixtures}/small.chain").md5 },
-                { assert gunzip_md5("${pair}/chains/${stem}.all.chain.gz")               == path("${fixtures}/small.all.chain").md5 },
-                { assert gunzip_md5("${pair}/chains/${stem}.all.pre.chain.gz")           == path("${fixtures}/small.all.pre.chain").md5 },
-                { assert gunzip_md5("${pair}/nets/${stem}.target.net.gz")                == path("${fixtures}/small.target.net").md5 },
-                { assert gunzip_md5("${pair}/nets/${stem}.query.net.gz")                 == path("${fixtures}/small.query.net").md5 },
-                { assert gunzip_md5("${pair}/nets/${stem}.noClass.net.gz")               == path("${fixtures}/small.noClass.net").md5 },
-                { assert gunzip_md5("${pair}/axt/${stem}.net.axt.gz")                    == path("${fixtures}/small.net.axt").md5 },
-                { assert gunzip_md5("${pair}/liftover/scer_smallToSeub_small.over.chain.gz") == path("${fixtures}/small.over.chain").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.chain.gz")                   == path("${platform}/small.chain").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.all.chain.gz")               == path("${platform}/small.all.chain").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.all.pre.chain.gz")           == path("${platform}/small.all.pre.chain").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.target.net.gz")                == path("${platform}/small.target.net").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.query.net.gz")                 == path("${platform}/small.query.net").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.noClass.net.gz")               == path("${platform}/small.noClass.net").md5 },
+                { assert gunzip_md5("${pair}/axt/${stem}.net.axt.gz")                    == path("${platform}/small.net.axt").md5 },
+                { assert gunzip_md5("${pair}/liftover/scer_smallToSeub_small.over.chain.gz") == path("${platform}/small.over.chain").md5 },
+                // These are all the platform-dependent files, so the snapshot can leave them out
+                { assert PlatformReferences.platformDependentNames(stable_content) == [
+                    "${stem}.all.chain.gz", "${stem}.all.pre.chain.gz", "${stem}.chain.gz", "${stem}.net.axt.gz",
+                    "${stem}.noClass.net.gz", "${stem}.query.net.gz", "${stem}.target.net.gz", 'scer_smallToSeub_small.over.chain.gz',
+                ].collect { name -> name.toString() }.sort() },
                 { assert snapshot(
                     removeNextflowVersion("$outputDir/pipeline_info/wgpa_software_versions.yml"),
                     stable_path,
-                    stable_content
+                    PlatformReferences.platformIndependent(stable_content)
                 ).match() }
             )
         }
@@ -181,6 +198,7 @@ nextflow_pipeline {
 
         then {
             def fixtures = "${projectDir}/tests/data/yeast_small"
+            def platform = PlatformReferences.dir(projectDir, 'yeast_small')
             def pair = "${params.outdir}/scer_seub_minus"
             def stem = 'scer_small_seub_small'
             def gunzip_md5 = { f ->
@@ -200,14 +218,14 @@ nextflow_pipeline {
             assertAll(
                 { assert minus_target_blocks == 76 },
                 { assert gunzip_md5("${pair}/alignment/${stem}.psl.gz")                  == path("${fixtures}/small.psl").md5 },
-                { assert gunzip_md5("${pair}/chains/${stem}.chain.gz")                   == path("${fixtures}/small.chain").md5 },
-                { assert gunzip_md5("${pair}/chains/${stem}.all.chain.gz")               == path("${fixtures}/small.all.chain").md5 },
-                { assert gunzip_md5("${pair}/chains/${stem}.all.pre.chain.gz")           == path("${fixtures}/small.all.pre.chain").md5 },
-                { assert gunzip_md5("${pair}/nets/${stem}.target.net.gz")                == path("${fixtures}/small.target.net").md5 },
-                { assert gunzip_md5("${pair}/nets/${stem}.query.net.gz")                 == path("${fixtures}/small.query.net").md5 },
-                { assert gunzip_md5("${pair}/nets/${stem}.noClass.net.gz")               == path("${fixtures}/small.noClass.net").md5 },
-                { assert gunzip_md5("${pair}/axt/${stem}.net.axt.gz")                    == path("${fixtures}/small.net.axt").md5 },
-                { assert gunzip_md5("${pair}/liftover/scer_smallToSeub_small.over.chain.gz") == path("${fixtures}/small.over.chain").md5 }
+                { assert gunzip_md5("${pair}/chains/${stem}.chain.gz")                   == path("${platform}/small.chain").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.all.chain.gz")               == path("${platform}/small.all.chain").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.all.pre.chain.gz")           == path("${platform}/small.all.pre.chain").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.target.net.gz")                == path("${platform}/small.target.net").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.query.net.gz")                 == path("${platform}/small.query.net").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.noClass.net.gz")               == path("${platform}/small.noClass.net").md5 },
+                { assert gunzip_md5("${pair}/axt/${stem}.net.axt.gz")                    == path("${platform}/small.net.axt").md5 },
+                { assert gunzip_md5("${pair}/liftover/scer_smallToSeub_small.over.chain.gz") == path("${platform}/small.over.chain").md5 }
             )
         }
     }
@@ -267,8 +285,12 @@ nextflow_pipeline {
 
         then {
             def fixtures = "${projectDir}/tests/data/yeast_small"
+            def platform = PlatformReferences.dir(projectDir, 'yeast_small')
             def pair = "${params.outdir}/scer_seub_maf"
             def stem = 'scer_small_seub_small'
+            def lastal_pair = "${params.outdir}/seub_scer_lastal"
+            def lastal_stem = 'seub_small_scer_small'
+            def refs = PlatformReferences.md5("${platform}/md5.txt")
             def gunzip_md5 = { f ->
                 new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { gz -> gz.bytes.md5() }
             }
@@ -290,15 +312,32 @@ nextflow_pipeline {
                 { assert new File("${pair}/alignment").list().sort() == [ "${stem}.psl.gz" ] },
                 // The pair with the MAF input gives the yeast_small fixtures
                 { assert gunzip_md5("${pair}/alignment/${stem}.psl.gz")                  == path("${fixtures}/small.psl").md5 },
-                { assert gunzip_md5("${pair}/chains/${stem}.all.chain.gz")               == path("${fixtures}/small.all.chain").md5 },
-                { assert gunzip_md5("${pair}/chains/${stem}.all.pre.chain.gz")           == path("${fixtures}/small.all.pre.chain").md5 },
-                { assert gunzip_md5("${pair}/nets/${stem}.noClass.net.gz")               == path("${fixtures}/small.noClass.net").md5 },
-                { assert gunzip_md5("${pair}/axt/${stem}.net.axt.gz")                    == path("${fixtures}/small.net.axt").md5 },
-                { assert gunzip_md5("${pair}/liftover/scer_smallToSeub_small.over.chain.gz") == path("${fixtures}/small.over.chain").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.chain.gz")                   == path("${platform}/small.chain").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.all.chain.gz")               == path("${platform}/small.all.chain").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.all.pre.chain.gz")           == path("${platform}/small.all.pre.chain").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.target.net.gz")                == path("${platform}/small.target.net").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.query.net.gz")                 == path("${platform}/small.query.net").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.noClass.net.gz")               == path("${platform}/small.noClass.net").md5 },
+                { assert gunzip_md5("${pair}/axt/${stem}.net.axt.gz")                    == path("${platform}/small.net.axt").md5 },
+                { assert gunzip_md5("${pair}/liftover/scer_smallToSeub_small.over.chain.gz") == path("${platform}/small.over.chain").md5 },
+                // The pair aligned with LAST gives the files of the v1.0.0 commands for seub_small -> scer_small on this platform
+                { assert gunzip_md5("${lastal_pair}/chains/${lastal_stem}.chain.gz")         == refs["${lastal_stem}.chain"] },
+                { assert gunzip_md5("${lastal_pair}/chains/${lastal_stem}.all.chain.gz")     == refs["${lastal_stem}.all.chain"] },
+                { assert gunzip_md5("${lastal_pair}/chains/${lastal_stem}.all.pre.chain.gz") == refs["${lastal_stem}.all.pre.chain"] },
+                { assert gunzip_md5("${lastal_pair}/nets/${lastal_stem}.target.net.gz")      == refs["${lastal_stem}.target.net"] },
+                { assert gunzip_md5("${lastal_pair}/nets/${lastal_stem}.query.net.gz")       == refs["${lastal_stem}.query.net"] },
+                { assert gunzip_md5("${lastal_pair}/nets/${lastal_stem}.noClass.net.gz")     == refs["${lastal_stem}.noClass.net"] },
+                { assert gunzip_md5("${lastal_pair}/axt/${lastal_stem}.net.axt.gz")          == refs["${lastal_stem}.net.axt"] },
+                { assert gunzip_md5("${lastal_pair}/liftover/seub_smallToScer_small.over.chain.gz") == refs['seub_smallToScer_small.over.chain'] },
+                // These are all the platform-dependent files, so the snapshot can leave them out
+                { assert PlatformReferences.platformDependentNames(stable_content) == [ stem, lastal_stem ].collectMany { s -> [
+                    "${s}.all.chain.gz", "${s}.all.pre.chain.gz", "${s}.chain.gz", "${s}.net.axt.gz",
+                    "${s}.noClass.net.gz", "${s}.query.net.gz", "${s}.target.net.gz",
+                ] }.plus([ 'scer_smallToSeub_small.over.chain.gz', 'seub_smallToScer_small.over.chain.gz' ]).collect { name -> name.toString() }.sort() },
                 { assert snapshot(
                     removeNextflowVersion("$outputDir/pipeline_info/wgpa_software_versions.yml"),
                     stable_path,
-                    stable_content
+                    PlatformReferences.platformIndependent(stable_content)
                 ).match() }
             )
         }
