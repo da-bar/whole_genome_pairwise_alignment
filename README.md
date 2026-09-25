@@ -19,7 +19,7 @@ Version 2 is a rewrite of [v1.0.0](https://github.com/da-bar/whole_genome_pairwi
 For each genome pair, the pipeline runs these steps:
 
 1. Genome preparation, once per distinct FASTA file: `faToTwoBit` makes a 2bit file (soft-masking is kept) and `twoBitInfo` makes a sizes file.
-2. Alignment: `lastdb -c` indexes the target genome, once per distinct target FASTA. `lastal` aligns the query with the preset's options and scoring matrix (MAF output). `maf-convert psl` converts the MAF to PSL.
+2. Alignment: `lastdb -c` indexes the target genome, once per distinct target FASTA. `lastal` aligns the query with the preset's options and scoring matrix (MAF output). `maf-convert psl` converts the MAF to PSL. A pair can instead start from an existing alignment (samplesheet column `alignment`, a MAF or PSL file, e.g. the many-to-many MAF of [nf-core/pairgenomealign](https://nf-co.re/pairgenomealign)): it skips `lastdb` and `lastal`, its sequence names and lengths are checked against the pair's genomes, and a MAF is converted to PSL.
 3. Chaining and netting: `axtChain` (preset options and score scheme), `chainMergeSort`, `chainPreNet`, `chainNet`, and `netSyntenic` on the target net.
 4. Net alignments: `netToAxt` on the syntenic net and the pre-net chains, then `axtSort`.
 5. liftOver chains (`--liftover`, on by default): `netChainSubset` and `chainStitchId` on the syntenic net and all chains, as in UCSC `doBlastzChainNet.pl`.
@@ -39,12 +39,13 @@ scer_vs_seub,/path/to/S_cerevisiae.fa,/path/to/S_eubayanus.fa,near
 scer_vs_spar,/path/to/S_cerevisiae.fa,/path/to/S_paradoxus.fa.gz,
 ```
 
-| Column   | Description                                                                                                                     |
-| -------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `id`     | Unique name of the pair (letters, digits, `.`, `_`, `-`; not `genomes` or `pipeline_info`). The outputs go to `<outdir>/<id>/`. |
-| `target` | Target (reference) genome FASTA: `.fa`, `.fasta` or `.fna`, optionally gzipped (`.gz`).                                         |
-| `query`  | Query genome FASTA, same formats as `target`.                                                                                   |
-| `preset` | Optional: `near`, `medium` or `far` (see [Presets](#presets)). An empty value uses `--preset` (default `near`).                 |
+| Column      | Description                                                                                                                                                                                                   |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`        | Unique name of the pair (letters, digits, `.`, `_`, `-`; not `genomes` or `pipeline_info`). The outputs go to `<outdir>/<id>/`.                                                                               |
+| `target`    | Target (reference) genome FASTA: `.fa`, `.fasta` or `.fna`, optionally gzipped (`.gz`).                                                                                                                       |
+| `query`     | Query genome FASTA, same formats as `target`.                                                                                                                                                                 |
+| `preset`    | Optional: `near`, `medium` or `far` (see [Presets](#presets)). An empty value uses `--preset` (default `near`).                                                                                               |
+| `alignment` | Optional: an existing alignment of the query to the target, MAF or PSL, optionally gzipped. The pair then skips LAST (see [usage](docs/usage.md#starting-from-an-existing-alignment-nf-corepairgenomealign)). |
 
 A genome can be used in any number of pairs, and as the target of one pair and the query of another; its 2bit, sizes and LAST index files are made only once. The output files are named after the FASTA file names without the extension, as in v1.0.0 (`<target>_<query>.*`), so two different FASTA files must not have the same name (compared ignoring case). A genome can also be aligned to itself; the pipeline then warns that the outputs contain the trivial self-alignment (see [usage](docs/usage.md#samplesheet-input)).
 
@@ -77,7 +78,7 @@ Use `near` for closely related genomes and `far` for distant ones. For compariso
 
 ## Pipeline output
 
-For each pair, `<outdir>/<id>/` holds `alignment/` (MAF, PSL), `chains/`, `nets/`, `axt/` and `liftover/`; `<outdir>/genomes/` holds the 2bit and sizes files. The alignment, chain, net and axt files are gzipped with `gzip -n` (no time stamp), so repeated runs give byte-identical files. For more details about the output files and reports, please refer to the [output documentation](docs/output.md).
+For each pair, `<outdir>/<id>/` holds `alignment/` (MAF, PSL; only the PSL, or nothing, for a pair with an alignment input), `chains/`, `nets/`, `axt/` and `liftover/`; `<outdir>/genomes/` holds the 2bit and sizes files. The alignment, chain, net and axt files are gzipped with `gzip -n` (no time stamp), so repeated runs give byte-identical files. For more details about the output files and reports, please refer to the [output documentation](docs/output.md).
 
 ## Relation to v1.0.0
 
@@ -105,6 +106,7 @@ What changed from v1.0.0:
 - Any number of genome pairs, from a samplesheet, each with its own preset (v1.0.0: one pair, set in `nextflow.config`, always `near`).
 - All three CNEr presets.
 - UCSC liftOver chains (`<target>To<Query>.over.chain.gz`).
+- A pair can start from an existing MAF or PSL alignment, such as the many-to-many alignment of nf-core/pairgenomealign, instead of the pipeline's LAST alignment (samplesheet column `alignment`).
 - The query net (`.query.net`), which v1.0.0 discarded, and the target net and axtChain chains, which v1.0.0 did not keep, are published.
 - Outputs are gzipped and sorted into subfolders (see [output](docs/output.md)); gzipped FASTA input is accepted.
 - No R: the tools run directly, each in its own conda environment or container.

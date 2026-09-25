@@ -21,6 +21,9 @@ Rewrite of v1.0.0 (commit `0280044`) on the [nf-core](https://nf-co.re/) templat
 - nf-core modules `last/lastdb`, `last/lastal` and `last/mafconvert`.
 - Subworkflows `prepare_genomes`, `pairwise_align`, `chain_net` and `liftover_chains`.
 - Test profiles: `test` (the v1.0.0 yeast pair, near) and `test_full` (all presets and the reverse pair). The pipeline nf-test checks the outputs against the v1.0.0 checksums in `tests/data/yeast/v1.0.0_md5.txt`.
+- Pairs can start from an existing alignment instead of the pipeline's LAST alignment: optional samplesheet column `alignment`, a MAF or PSL file of the query aligned to the target (optionally gzipped), for example the many-to-many MAF (`*.m2m.maf.gz`) of nf-core/pairgenomealign run with `--m2m`. Such a pair skips `lastdb` and `lastal` (a LAST index is only made for targets that another pair aligns to with LAST); a MAF is converted with `maf-convert psl`, a PSL goes to `axtChain` as it is. The target and query FASTA files are still required, and the preset still sets the `axtChain` options and score scheme. MAF blocks with the target on the `-` strand (pairgenomealign's default `--strand both`) are handled by `maf-convert psl`. See the usage docs for pairgenomealign (target choice for polyploid genomes, `--m2m`).
+- Local module `check/alignment` (CHECK_ALIGNMENT): checks that the target and query sequence names and lengths of an alignment input are those of the pair's FASTA files, and stops the pipeline with a list of the sequences that do not fit, saying when target and query look swapped.
+- Tests for alignment inputs (`tests/alignment_input.nf.test`): a MAF input (`tests/data/yeast_small/small.maf.gz`, made with the v1.0.0 lastal command), a PSL input and a MAF with the target on the `-` strand each reproduce every yeast_small fixture byte for byte; target and query swapped fails in the check; a samplesheet mixing a LAST pair and a MAF pair makes one LAST index only.
 
 ### `Changed`
 
@@ -38,12 +41,13 @@ Rewrite of v1.0.0 (commit `0280044`) on the [nf-core](https://nf-co.re/) templat
 
 ### `Dependencies`
 
-| Dependency                    | Old version (v1.0.0, through CNEr 1.46.0) | New version |
-| ----------------------------- | ----------------------------------------- | ----------- |
-| `last`                        | 1652                                      | 1652        |
-| `ucsc-*` kent utilities       | 482                                       | 482         |
-| `bioconductor-cner`           | 1.46.0                                    | not used    |
-| `nf-schema` (Nextflow plugin) | 2.5.1 (template)                          | 2.7.2       |
+| Dependency                     | Old version (v1.0.0, through CNEr 1.46.0) | New version |
+| ------------------------------ | ----------------------------------------- | ----------- |
+| `last`                         | 1652                                      | 1652        |
+| `ucsc-*` kent utilities        | 482                                       | 482         |
+| `bioconductor-cner`            | 1.46.0                                    | not used    |
+| `nf-schema` (Nextflow plugin)  | 2.5.1 (template)                          | 2.7.2       |
+| `gawk` (alignment input check) | not used                                  | 5.3.1       |
 
 ### `Deprecated`
 

@@ -8,7 +8,7 @@ da-bar/wgpa aligns genome pairs with LAST and chains and nets the alignments wit
 
 ## Samplesheet input
 
-You will need to create a samplesheet with information about the genome pairs you would like to align before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 or 4 columns, and a header row as shown in the examples below.
+You will need to create a samplesheet with information about the genome pairs you would like to align before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 to 5 columns, and a header row as shown in the examples below.
 
 ```bash
 --input '[path to samplesheet file]'
@@ -21,12 +21,13 @@ scer_vs_spar,/data/genomes/S_cerevisiae.fa,/data/genomes/S_paradoxus.fa.gz,
 seub_vs_scer,/data/genomes/S_eubayanus.fa,/data/genomes/S_cerevisiae.fa,near
 ```
 
-| Column   | Description                                                                                                                   |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `id`     | Unique name of the pair (see the notes below for the allowed names). The outputs of the pair are written to `<outdir>/<id>/`. |
-| `target` | Target genome FASTA file, with the extension `.fa`, `.fasta` or `.fna`, optionally followed by `.gz`.                         |
-| `query`  | Query genome FASTA file, same formats as `target`.                                                                            |
-| `preset` | Optional. `near`, `medium` or `far` (see [Presets](#presets)). Leave it empty, or leave the column out, to use `--preset`.    |
+| Column      | Description                                                                                                                                                                                                                                                                                                                           |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`        | Unique name of the pair (see the notes below for the allowed names). The outputs of the pair are written to `<outdir>/<id>/`.                                                                                                                                                                                                         |
+| `target`    | Target genome FASTA file, with the extension `.fa`, `.fasta` or `.fna`, optionally followed by `.gz`.                                                                                                                                                                                                                                 |
+| `query`     | Query genome FASTA file, same formats as `target`.                                                                                                                                                                                                                                                                                    |
+| `preset`    | Optional. `near`, `medium` or `far` (see [Presets](#presets)). Leave it empty, or leave the column out, to use `--preset`.                                                                                                                                                                                                            |
+| `alignment` | Optional. An existing alignment of the query to the target: a MAF or PSL file (`.maf`, `.psl`, optionally followed by `.gz`). The pair then skips LAST; see [Starting from an existing alignment](#starting-from-an-existing-alignment-nf-corepairgenomealign). Leave it empty, or leave the column out, to align the pair with LAST. |
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 
@@ -34,7 +35,7 @@ Notes:
 
 - Pair ids can contain letters, digits, `.`, `_` and `-`, and must start with a letter or digit. `genomes` and `pipeline_info` (in any case) are not allowed, because they are the pipeline's own output folders. Two ids must differ in more than case (`pairA` and `paira` are rejected), because on a case-insensitive file system, such as the macOS default, they would share one folder.
 - The genome name is the FASTA file name without `.fa`, `.fasta` or `.fna` (and `.gz`), as in v1.0.0. The output files of a pair are named `<target name>_<query name>.*`, and the 2bit and sizes files `<genome name>.2bit` and `.sizes`. Two different FASTA files with the same name (for example `/a/genome.fa` and `/b/genome.fa`), or with names that differ only in case (`genome.fa` and `Genome.fa`), are therefore rejected; rename one of them.
-- A FASTA file can appear in any number of rows, as target in one pair and as query in another. The pipeline makes its 2bit and sizes files once, and one LAST index per distinct target FASTA.
+- A FASTA file can appear in any number of rows, as target in one pair and as query in another. The pipeline makes its 2bit and sizes files once, and one LAST index per distinct target FASTA of the pairs that it aligns with LAST.
 - Lowercase (soft-masked) bases are kept in the 2bit files and are excluded from the initial LAST matches (`lastdb -c`), so soft-mask repeats before running the pipeline, as for v1.0.0.
 - The sequence names are the first word of each FASTA header.
 - A genome can be aligned to itself (the same file as target and query). The pipeline then prints a warning, because the chains, nets, axt files and liftOver chains contain the trivial alignment of each sequence to itself (the diagonal). The pipeline does not remove it; UCSC self-alignments need extra steps that the pipeline does not do.
@@ -52,6 +53,57 @@ The presets are the `distance` settings of CNEr's `lastal()` and `axtChain()` fu
 The matrices are in [`assets/matrices`](../assets/matrices) (`<preset>.lastal.mat` and `<preset>.axtchain.mat`); they are the matrices that CNEr 1.46.0 `scoringMatrix()` writes. The target is always indexed with `lastdb -c`.
 
 `--preset` (default `near`, the only preset of v1.0.0) sets the preset of the pairs whose `preset` value is empty.
+
+## Starting from an existing alignment (nf-core/pairgenomealign)
+
+A pair can start from an alignment made elsewhere, for example by [nf-core/pairgenomealign](https://nf-co.re/pairgenomealign), instead of the pipeline's own LAST alignment. Give the alignment in the `alignment` column:
+
+```csv title="samplesheet.csv"
+id,target,query,preset,alignment
+carp_vs_zebrafish,/data/genomes/carp.fa,/data/genomes/zebrafish.fa,far,/data/pairgenomealign/alignment/carp___zebrafish.m2m.maf.gz
+scer_vs_seub,/data/genomes/S_cerevisiae.fa,/data/genomes/S_eubayanus.fa,near,
+```
+
+For such a pair:
+
+- The alignment must be of the query aligned to the target: in a MAF file, the target is the first sequence of each alignment block and the query the second; in a PSL file, the target is in columns 14-15 (`tName`, `tSize`) and the query in columns 10-11 (`qName`, `qSize`). The file can be gzipped.
+- `target` and `query` are still needed, because the chaining and netting steps use the 2bit and sizes files of both genomes. They must be the FASTA files the alignment was made from.
+- `lastdb` and `lastal` are not run. A MAF is converted to PSL with `maf-convert psl`; a PSL goes to `axtChain` as it is. The LAST index of a target is only made if another pair aligns to it with LAST. Genome files are still made once per FASTA file.
+- The preset still sets the `axtChain` options and score scheme (see [Presets](#presets)), whatever options or scoring matrix made the alignment. Its lastal options are not used. Choose the preset for the distance of the two genomes as for any other pair.
+- Before anything else is done with the alignment, the pipeline checks that every target and query sequence of the alignment is in the target or query FASTA, with the same length. Otherwise it stops with a message that lists the sequences that do not fit. The usual causes are target and query swapped (the message then says so) or an alignment made from another genome or another assembly version.
+- The outputs are the same as for a pair aligned by the pipeline, except for `<id>/alignment/`: it holds only the PSL converted from a MAF input, and is not made for a PSL input (see [output](output.md#alignment)).
+
+On the yeast test pair, a MAF made with the v1.0.0 lastal command, given in the `alignment` column, gives every chain, net, axt and liftOver file byte for byte as the pipeline's own alignment does (the `alignment input` tests in [`tests/alignment_input.nf.test`](../tests/alignment_input.nf.test)).
+
+### nf-core/pairgenomealign
+
+nf-core/pairgenomealign aligns one target genome to one or more query genomes with LAST, with scoring parameters trained for each pair (`last-train`). To use its alignments here:
+
+- Run it with `--m2m`, and give the many-to-many file `alignment/<targetName>___<sample>.m2m.maf.gz` to this pipeline, not the one-to-one file (`*.o2o.maf.gz`, the pairgenomealign default). The one-to-one alignment keeps at most one alignment for each part of each genome. Where the target has two homeologous copies of a query region, as the allotetraploid carp has for a region of a diploid genome, it keeps only one of them, and the net cannot bring back the other because it is no longer in the alignment. The many-to-many MAF is the plain `lastal` output, as the pipeline's own alignment is, and the chaining and netting then decide what the net keeps.
+- The genome whose bases should keep both homeologs must be pairgenomealign's target (`--target`), and the same genome must be the `target` of the pair here. The chains, nets, axt and liftOver files are referenced to the target: the target net can use one region of the query genome for several regions of the target genome (e.g. carp's A and B copies of a zebrafish region), but gives each target base at most one query region. With carp as the query, the target-referenced net would keep only one carp homeolog for each region of the diploid genome.
+- The file name comes from `--targetName` (default `target`) and the `sample` column of pairgenomealign's samplesheet, not from the FASTA file names; the sequence names in the MAF are those of the FASTA files. Use the same FASTA files as pairgenomealign's `--target` and query as `target` and `query` here.
+- pairgenomealign's default `--strand both` indexes both strands of the target (`lastdb -S2`), and its MAF files then have alignment blocks with the target on the `-` strand (and the query on `+`). This needs no special option: `maf-convert psl` writes such blocks with the target on the `+` strand, as the PSL format requires. On the yeast test pair (pairgenomealign 3.0.4, `--m2m`), the PSL of the `--strand both` m2m MAF, 65 of whose 240 blocks have the target on `-`, was byte-identical to the PSL of the same MAF with every block turned to the `+` target strand (`maf-swap -n1`), and so were the chains. `--strand forward` is not needed. The two settings give somewhat different alignments, though: on the yeast pair, `--strand forward` gave 341 m2m blocks instead of 240, and liftOver chains covering 31.4% instead of 31.3% of the target. The `alignment input - MAF with the target on the - strand` test checks this case.
+- pairgenomealign runs `lastal` with several threads (`-P`), so the order of the alignments in its MAF files can change from one pairgenomealign run to the next, and with it the chain IDs and the chains that the net picks (see [lastal threads and reproducibility](#lastal-threads-and-reproducibility)). Given the same MAF file, this pipeline gives the same outputs in every run.
+- With `-profile conda` on macOS, pairgenomealign 3.0.4's dot plot steps fail (their font path only exists in its containers). pairgenomealign carries on (it ends with "Pipeline completed successfully, but with errored process(es)") and its MAF files are complete; `--skip_dotplot_m2m --skip_dotplot_m2o --skip_dotplot_o2m --skip_dotplot_o2o` avoids the errors.
+
+For example, with carp as the target and zebrafish as the query:
+
+```bash
+nextflow run nf-core/pairgenomealign -r 3.0.4 -profile docker \
+    --target /data/genomes/carp.fa --targetName carp \
+    --input queries.csv \
+    --m2m \
+    --outdir /data/pairgenomealign
+```
+
+with `queries.csv`:
+
+```csv title="queries.csv"
+sample,fasta
+zebrafish,/data/genomes/zebrafish.fa
+```
+
+and then the `carp_vs_zebrafish` row of the samplesheet above.
 
 ## liftOver chains
 

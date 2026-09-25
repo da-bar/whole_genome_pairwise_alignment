@@ -38,7 +38,7 @@ In the file names, `<target>` and `<query>` are the genome names: the FASTA file
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
 - [Genomes](#genomes) - 2bit and sizes files of each genome
-- [Alignment](#alignment) - LAST alignments in MAF and PSL format
+- [Alignment](#alignment) - LAST alignments in MAF and PSL format (or the PSL of an alignment input)
 - [Chains](#chains) - axtChain chains, merged and filtered
 - [Nets](#nets) - chainNet nets and the syntenic net
 - [Net alignments](#net-alignments) - alignments of the syntenic net in axt format
@@ -69,6 +69,8 @@ Each distinct FASTA file gives one pair of files, however many pairs use it. The
   - `<target>_<query>.tsv`: alignment statistics from the nf-core LAST_LASTAL module (total alignment length, percent identity, and the number and total length of the target and query sequences).
 
 </details>
+
+For a pair that starts from an existing alignment (samplesheet column `alignment`, see [usage](usage.md#starting-from-an-existing-alignment-nf-corepairgenomealign)), `alignment/` holds only `<target>_<query>.psl.gz`, converted from the MAF input; the MAF itself and the `.tsv` statistics are not made. For a PSL input the folder is not made, because the PSL goes to `axtChain` as it is. The other folders are the same as for a pair aligned by the pipeline.
 
 ### Chains
 
