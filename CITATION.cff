@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+title: "whole_genome_pairwise_alignment"
+abstract: >-
+  Nextflow pipeline for whole-genome pairwise alignment with LAST, followed by
+  UCSC chaining and netting (axtChain, chainMergeSort, chainPreNet, chainNet,
+  netSyntenic, netToAxt), using the CNEr "near" preset. Version 1.0.0 is the
+  implementation used for the alignments, chains and nets of the carp
+  developmental regulatory atlas.
+type: software
+authors:
+  - family-names: "Baranašić"
+    given-names: "Damir"
+    affiliation: "Ruđer Bošković Institute"
+  - family-names: "Kajan"
+    given-names: "Katarina"
+version: "1.0.0"
+date-released: "2026-09-25"
+license: MIT
+repository-code: "https://github.com/da-bar/whole_genome_pairwise_alignment"
+keywords:
+  - whole-genome alignment
+  - LAST
+  - axtChain
+  - chainNet
+  - Nextflow
