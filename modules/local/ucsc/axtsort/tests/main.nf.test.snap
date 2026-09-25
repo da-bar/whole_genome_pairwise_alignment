@@ -1,0 +1,125 @@
+{
+    "yeast_small - axt": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.axt.gz:md5,aceff596f42c905451305726d1bac8ef"
+                    ]
+                ],
+                "1": [
+                    [
+                        "UCSC_AXTSORT",
+                        "ucsc",
+                        "482"
+                    ]
+                ],
+                "axt": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.axt.gz:md5,aceff596f42c905451305726d1bac8ef"
+                    ]
+                ],
+                "versions_ucsc": [
+                    [
+                        "UCSC_AXTSORT",
+                        "ucsc",
+                        "482"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-09-25T10:23:53.331361",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "yeast_small - axt - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.axt.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        "UCSC_AXTSORT",
+                        "ucsc",
+                        "482"
+                    ]
+                ],
+                "axt": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.axt.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_ucsc": [
+                    [
+                        "UCSC_AXTSORT",
+                        "ucsc",
+                        "482"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-09-25T10:23:58.93561",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "yeast_small - axt.gz from UCSC_NETTOAXT": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.axt.gz:md5,aceff596f42c905451305726d1bac8ef"
+                    ]
+                ],
+                "1": [
+                    [
+                        "UCSC_AXTSORT",
+                        "ucsc",
+                        "482"
+                    ]
+                ],
+                "axt": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.axt.gz:md5,aceff596f42c905451305726d1bac8ef"
+                    ]
+                ],
+                "versions_ucsc": [
+                    [
+                        "UCSC_AXTSORT",
+                        "ucsc",
+                        "482"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-09-25T10:23:56.248701",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

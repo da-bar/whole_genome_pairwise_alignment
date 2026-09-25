@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: ucsc_chainstitchid
+description: Join chain fragments with the same chain ID into a single chain per ID
+keywords:
+  - chain
+  - liftover
+  - alignment
+  - ucsc
+  - ucsc/chainstitchid
+tools:
+  - ucsc:
+      description: |
+        chainStitchId (UCSC kent utilities) joins chain fragments that share a
+        chain ID (e.g. from netChainSubset) into one chain per ID, summing the
+        fragment scores. The result is the "over.chain" used by liftOver.
+      homepage: http://hgdownload.cse.ucsc.edu/admin/exe/
+      documentation: https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/FOOTER.txt
+      tool_dev_url: https://github.com/ucscGenomeBrowser/kent/tree/master/src/hg/mouseStuff/chainStitchId
+      licence: ["varies; see http://genome.ucsc.edu/license"]
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. [ id:'test' ]
+    - chain:
+        type: file
+        description: Chain file with fragments of the same original chains
+          (e.g. from netChainSubset), optionally gzipped
+        pattern: "*.{chain,chain.gz}"
+        ontologies:
+          - edam: http://edamontology.org/format_3982 # CHAIN
+output:
+  chain:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. [ id:'test' ]
+      - "*.chain.gz":
+          type: file
+          description: Gzipped chain file with one chain per chain ID
+          pattern: "*.chain.gz"
+          ontologies:
+            - edam: http://edamontology.org/format_3982 # CHAIN
+            - edam: http://edamontology.org/format_3989 # GZIP format
+  versions_ucsc:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The expression to obtain the version of the tool
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The expression to obtain the version of the tool
+authors:
+  - "@da-bar"
+maintainers:
+  - "@da-bar"

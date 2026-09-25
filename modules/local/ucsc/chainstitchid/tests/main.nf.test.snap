@@ -1,0 +1,84 @@
+{
+    "yeast_small - chain - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.chain.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        "UCSC_CHAINSTITCHID",
+                        "ucsc",
+                        "482"
+                    ]
+                ],
+                "chain": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.chain.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_ucsc": [
+                    [
+                        "UCSC_CHAINSTITCHID",
+                        "ucsc",
+                        "482"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-09-25T10:25:18.42804",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "yeast_small - chain.gz from UCSC_NETCHAINSUBSET": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.chain.gz:md5,0f64eabd1bb9c65ddceca4ec27effdf3"
+                    ]
+                ],
+                "1": [
+                    [
+                        "UCSC_CHAINSTITCHID",
+                        "ucsc",
+                        "482"
+                    ]
+                ],
+                "chain": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.chain.gz:md5,0f64eabd1bb9c65ddceca4ec27effdf3"
+                    ]
+                ],
+                "versions_ucsc": [
+                    [
+                        "UCSC_CHAINSTITCHID",
+                        "ucsc",
+                        "482"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-09-25T10:25:15.762906",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

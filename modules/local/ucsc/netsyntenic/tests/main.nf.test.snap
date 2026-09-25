@@ -1,0 +1,70 @@
+{
+    "yeast_small - target.net": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "test.net.gz:md5,18b7f9969a71b23cf37bc12e2a690d05"
+                ]
+            ],
+            "18b7f9969a71b23cf37bc12e2a690d05",
+            {
+                "versions_ucsc": [
+                    [
+                        "UCSC_NETSYNTENIC",
+                        "ucsc",
+                        "482"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-09-25T10:22:59.341096",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "yeast_small - target.net - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.net.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        "UCSC_NETSYNTENIC",
+                        "ucsc",
+                        "482"
+                    ]
+                ],
+                "net": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.net.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_ucsc": [
+                    [
+                        "UCSC_NETSYNTENIC",
+                        "ucsc",
+                        "482"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-09-25T10:23:02.151649",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

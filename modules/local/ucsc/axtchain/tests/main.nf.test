@@ -1,0 +1,129 @@
+nextflow_process {
+
+    name "Test Process UCSC_AXTCHAIN"
+    script "../main.nf"
+    process "UCSC_AXTCHAIN"
+    config "./nextflow.config"
+    tag "modules"
+    tag "modules_local"
+    tag "ucsc"
+    tag "ucsc/axtchain"
+
+    // In nf-test, ${projectDir} (alias ${baseDir}) is the pipeline root, i.e. the directory holding nf-test.config.
+    // It is interpolated by nf-test before the process block is handed to Nextflow.
+
+    test("yeast_small - psl - near") {
+
+        when {
+            process {
+                """
+                input[0] = Channel.of([
+                    [ id:'small' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/small.psl", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/scer_small.2bit", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/seub_small.2bit", checkIfExists: true)
+                ])
+                input[1] = file("${projectDir}/assets/matrices/near.axtchain.mat", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            def gunzip_md5 = { f -> new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { it.bytes.md5() } }
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() },
+                // Parity with v1: the decompressed chain must be byte-identical to the v1-made fixture
+                { assert gunzip_md5(process.out.chain[0][1]) == path("${projectDir}/tests/data/yeast_small/small.chain").md5 }
+            )
+        }
+    }
+
+    test("yeast_small - psl.gz - near") {
+
+        when {
+            // Build a gzipped copy of the PSL fixture inside this test's own directory
+            def psl_gz = new File("${launchDir}/small.psl.gz")
+            psl_gz.withOutputStream { os ->
+                new java.util.zip.GZIPOutputStream(os).withCloseable { gz ->
+                    gz << new File("${projectDir}/tests/data/yeast_small/small.psl").bytes
+                }
+            }
+            process {
+                """
+                input[0] = Channel.of([
+                    [ id:'small' ], // meta map
+                    file("${psl_gz}", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/scer_small.2bit", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/seub_small.2bit", checkIfExists: true)
+                ])
+                input[1] = file("${projectDir}/assets/matrices/near.axtchain.mat", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            def gunzip_md5 = { f -> new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { it.bytes.md5() } }
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() },
+                // A gzipped PSL must give the same chains as the plain PSL (and as v1)
+                { assert gunzip_md5(process.out.chain[0][1]) == path("${projectDir}/tests/data/yeast_small/small.chain").md5 }
+            )
+        }
+    }
+
+    test("yeast_small - psl - default score scheme") {
+
+        when {
+            process {
+                """
+                input[0] = Channel.of([
+                    [ id:'small' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/small.psl", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/scer_small.2bit", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/seub_small.2bit", checkIfExists: true)
+                ])
+                input[1] = []
+                """
+            }
+        }
+
+        then {
+            def gunzip_md5 = { f -> new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { it.bytes.md5() } }
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() },
+                // Without -scoreScheme axtChain uses its built-in matrix, so the chains differ from v1's near preset
+                { assert gunzip_md5(process.out.chain[0][1]) != path("${projectDir}/tests/data/yeast_small/small.chain").md5 },
+                { assert !new File(new File(process.out.chain[0][1].toString()).parentFile, '.command.sh').text.contains('-scoreScheme') }
+            )
+        }
+    }
+
+    test("yeast_small - psl - near - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = Channel.of([
+                    [ id:'small' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/small.psl", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/scer_small.2bit", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/seub_small.2bit", checkIfExists: true)
+                ])
+                input[1] = file("${projectDir}/assets/matrices/near.axtchain.mat", checkIfExists: true)
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+}

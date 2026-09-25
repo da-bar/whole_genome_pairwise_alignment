@@ -1,0 +1,95 @@
+{
+    "yeast_small - all.pre.chain": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "test.target.net.gz:md5,7be3e918f0cedb30857dafd788fff212"
+                ]
+            ],
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "test.query.net.gz:md5,4e6ac01a4af2ed4b2953bc9a15926a64"
+                ]
+            ],
+            "7be3e918f0cedb30857dafd788fff212",
+            "4e6ac01a4af2ed4b2953bc9a15926a64",
+            {
+                "versions_ucsc": [
+                    [
+                        "UCSC_CHAINNET",
+                        "ucsc",
+                        "482"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-09-25T10:22:52.733227",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "yeast_small - all.pre.chain - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.target.net.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.query.net.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "2": [
+                    [
+                        "UCSC_CHAINNET",
+                        "ucsc",
+                        "482"
+                    ]
+                ],
+                "query_net": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.query.net.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "target_net": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.target.net.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_ucsc": [
+                    [
+                        "UCSC_CHAINNET",
+                        "ucsc",
+                        "482"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-09-25T10:22:55.451276",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

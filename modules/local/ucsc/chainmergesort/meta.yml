@@ -1,0 +1,72 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "ucsc_chainmergesort"
+description: Merge one or more chain files into a single chain file sorted by score, with UCSC chainMergeSort
+keywords:
+  - chain
+  - merge
+  - sort
+  - whole-genome alignment
+  - ucsc
+  - ucsc/chainmergesort
+tools:
+  - ucsc:
+      description: |
+        chainMergeSort from the UCSC Genome Browser (kent) utilities combines chain files
+        into one file sorted by descending score and renumbers the chain ids (unless -saveId).
+      homepage: "https://hgdownload.soe.ucsc.edu/admin/exe/"
+      documentation: "https://genomewiki.ucsc.edu/index.php/Chains_Nets"
+      tool_dev_url: "https://github.com/ucscGenomeBrowser/kent"
+      licence: ["varies; see http://genome.ucsc.edu/license"]
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'target_query' ]`
+    - chains:
+        type: file
+        description: |
+          One or more chain files, plain or gzipped, with distinct file names. They are passed
+          to chainMergeSort sorted by file name, because score ties are broken by input order.
+        pattern: "*.{chain,chain.gz}"
+        ontologies:
+          - edam: http://edamontology.org/format_3982 # CHAIN
+output:
+  chain:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'target_query' ]`
+      - "*.chain.gz":
+          type: file
+          description: Gzipped, merged and score-sorted chain file
+          pattern: "*.chain.gz"
+          ontologies:
+            - edam: http://edamontology.org/format_3982 # CHAIN
+  versions_ucsc:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The expression to obtain the version of the tool
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The expression to obtain the version of the tool
+authors:
+  - "@da-bar"
+maintainers:
+  - "@da-bar"

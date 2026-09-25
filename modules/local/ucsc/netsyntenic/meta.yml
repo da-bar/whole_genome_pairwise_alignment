@@ -1,0 +1,69 @@
+name: ucsc_netsyntenic
+description: Add synteny information to an alignment net (UCSC kent netSyntenic)
+keywords:
+  - net
+  - synteny
+  - alignment
+  - ucsc
+  - ucsc/netsyntenic
+tools:
+  - ucsc:
+      description: |
+        netSyntenic adds synteny information to a net (the qDup, qOver, qFar and
+        type fields), classifying each fill as top, syn, inv or nonSyn.
+      homepage: http://hgdownload.cse.ucsc.edu/admin/exe/
+      documentation: https://genome.ucsc.edu/goldenPath/help/net.html
+      tool_dev_url: https://github.com/ucscGenomeBrowser/kent/tree/master/src/hg/mouseStuff/netSyntenic
+      licence: ["varies; see http://genome.ucsc.edu/license"]
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. [ id:'test' ]
+    - net:
+        type: file
+        description: Net file (e.g. the target net from chainNet), optionally gzipped
+        pattern: "*.{net,net.gz}"
+        ontologies:
+          - edam: http://edamontology.org/format_3983 # NET
+output:
+  net:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. [ id:'test' ]
+      - "*.net.gz":
+          type: file
+          description: Gzipped net with synteny information added
+          pattern: "*.net.gz"
+          ontologies:
+            - edam: http://edamontology.org/format_3983 # NET
+            - edam: http://edamontology.org/format_3989 # GZIP format
+  versions_ucsc:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The expression to obtain the version of the tool
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The expression to obtain the version of the tool
+authors:
+  - "@da-bar"
+maintainers:
+  - "@da-bar"

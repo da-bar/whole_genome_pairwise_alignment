@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "ucsc_twobitinfo"
+description: Write the sequence sizes (chrom.sizes) of a UCSC 2bit file
+keywords:
+  - 2bit
+  - twobit
+  - chrom.sizes
+  - genome
+  - ucsc
+  - ucsc/twobitinfo
+tools:
+  - ucsc:
+      description: |
+        twoBitInfo from the UCSC Genome Browser (kent) utilities reports the name and length
+        of every sequence in a 2bit file, in file order.
+      homepage: "https://hgdownload.soe.ucsc.edu/admin/exe/"
+      documentation: "https://genome.ucsc.edu/goldenPath/help/twoBit.html"
+      tool_dev_url: "https://github.com/ucscGenomeBrowser/kent"
+      licence: ["varies; see http://genome.ucsc.edu/license"]
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'genome' ]`
+    - twobit:
+        type: file
+        description: Genome in UCSC 2bit format (2bit files cannot be gzipped)
+        pattern: "*.2bit"
+        ontologies:
+          - edam: http://edamontology.org/format_3009 # 2bit
+output:
+  sizes:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'genome' ]`
+      - "*.sizes":
+          type: file
+          description: Tab-separated sequence sizes ("name<TAB>length"), one line per sequence in 2bit order
+          pattern: "*.sizes"
+          ontologies:
+            - edam: http://edamontology.org/format_3475 # TSV
+  versions_ucsc:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The expression to obtain the version of the tool
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The expression to obtain the version of the tool
+authors:
+  - "@da-bar"
+maintainers:
+  - "@da-bar"

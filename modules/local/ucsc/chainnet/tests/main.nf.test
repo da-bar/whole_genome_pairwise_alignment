@@ -1,0 +1,74 @@
+nextflow_process {
+
+    name "Test Process UCSC_CHAINNET"
+    script "../main.nf"
+    process "UCSC_CHAINNET"
+    tag "modules"
+    tag "modules_local"
+    tag "ucsc"
+    tag "ucsc/chainnet"
+
+    // Fixtures live in <repo>/tests/data/yeast_small. In nf-test, "${projectDir}" inside the
+    // test file resolves to the directory holding nf-test.config (the repository root).
+
+    test("yeast_small - all.pre.chain") {
+
+        when {
+            process {
+                """
+                input[0] = channel.of([
+                    [ id:'test' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/small.all.pre.chain", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/scer_small.sizes", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/seub_small.sizes", checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            // Parity with v1 (CNEr): md5 of each decompressed net must equal the v1-made fixture
+            def gunzip_md5 = { f -> new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { it.bytes.md5() } }
+            def target_md5    = gunzip_md5(process.out.target_net[0][1])
+            def query_md5     = gunzip_md5(process.out.query_net[0][1])
+            def v1_target_md5 = new File("${projectDir}/tests/data/yeast_small/small.target.net").bytes.md5()
+            def v1_query_md5  = new File("${projectDir}/tests/data/yeast_small/small.query.net").bytes.md5()
+            assertAll(
+                { assert process.success },
+                { assert target_md5 == v1_target_md5 },
+                { assert query_md5 == v1_query_md5 },
+                { assert snapshot(
+                    process.out.target_net,
+                    process.out.query_net,
+                    target_md5,
+                    query_md5,
+                    process.out.findAll { key, val -> key.startsWith('versions') }
+                ).match() }
+            )
+        }
+    }
+
+    test("yeast_small - all.pre.chain - stub") {
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = channel.of([
+                    [ id:'test' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/small.all.pre.chain", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/scer_small.sizes", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/seub_small.sizes", checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+}

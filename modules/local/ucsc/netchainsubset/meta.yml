@@ -1,0 +1,79 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: ucsc_netchainsubset
+description: Create a chain file with the subset of chains that appear in a net
+keywords:
+  - net
+  - chain
+  - liftover
+  - alignment
+  - ucsc
+  - ucsc/netchainsubset
+tools:
+  - ucsc:
+      description: |
+        netChainSubset (UCSC kent utilities) writes the parts of the input
+        chains that are used by the net. Followed by chainStitchId this gives
+        the "over.chain" used by liftOver.
+      homepage: http://hgdownload.cse.ucsc.edu/admin/exe/
+      documentation: https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/FOOTER.txt
+      tool_dev_url: https://github.com/ucscGenomeBrowser/kent/tree/master/src/hg/mouseStuff/netChainSubset
+      licence: ["varies; see http://genome.ucsc.edu/license"]
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. [ id:'test' ]
+    - net:
+        type: file
+        description: Net file (e.g. from chainNet/netSyntenic), optionally gzipped
+        pattern: "*.{net,net.gz}"
+        ontologies:
+          - edam: http://edamontology.org/format_3983 # NET
+    - chain:
+        type: file
+        description: Chain file containing the chains referenced by the net
+          (e.g. from chainMergeSort), optionally gzipped
+        pattern: "*.{chain,chain.gz}"
+        ontologies:
+          - edam: http://edamontology.org/format_3982 # CHAIN
+output:
+  chain:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. [ id:'test' ]
+      - "*.chain.gz":
+          type: file
+          description: Gzipped chain file with the chain fragments used by the net
+          pattern: "*.chain.gz"
+          ontologies:
+            - edam: http://edamontology.org/format_3982 # CHAIN
+            - edam: http://edamontology.org/format_3989 # GZIP format
+  versions_ucsc:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The expression to obtain the version of the tool
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The expression to obtain the version of the tool
+authors:
+  - "@da-bar"
+maintainers:
+  - "@da-bar"

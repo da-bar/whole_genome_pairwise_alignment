@@ -1,0 +1,70 @@
+nextflow_process {
+
+    name "Test Process UCSC_NETCHAINSUBSET"
+    script "../main.nf"
+    process "UCSC_NETCHAINSUBSET"
+    config "./nextflow.config"
+
+    tag "modules"
+    tag "modules_local"
+    tag "ucsc"
+    tag "ucsc/netchainsubset"
+
+    // Fixtures: tests/data/yeast_small (made with the v1.0.0 CNEr command lines).
+    // small.subset.chain (next to this file) is the intermediate of the
+    // small.over.chain recipe:
+    //   netChainSubset -verbose=0 small.noClass.net small.all.chain small.subset.chain
+    //   (chainStitchId small.subset.chain stdout reproduces small.over.chain)
+    // projectDir resolves to the repository root (the nf-test.config directory),
+    // both inside the Nextflow process block and in the nf-test then block.
+
+    test("yeast_small - net, chain") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/small.noClass.net", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/small.all.chain", checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            // parity: decompressed output must be byte-identical to the netChainSubset step of small.over.chain
+            def gunzipMd5 = { f -> new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { it.bytes.md5() } }
+            def ref_md5 = path("${moduleTestDir}/small.subset.chain").bytes.md5()
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() },
+                { assert gunzipMd5(process.out.chain[0][1]) == ref_md5 }
+            )
+        }
+    }
+
+    test("yeast_small - net, chain - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/small.noClass.net", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/small.all.chain", checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+}

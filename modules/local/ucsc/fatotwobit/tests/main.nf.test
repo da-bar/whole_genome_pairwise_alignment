@@ -1,0 +1,89 @@
+nextflow_process {
+
+    name "Test Process UCSC_FATOTWOBIT"
+    script "../main.nf"
+    process "UCSC_FATOTWOBIT"
+    tag "modules"
+    tag "modules_local"
+    tag "ucsc"
+    tag "ucsc/fatotwobit"
+
+    // In nf-test, ${projectDir} (alias ${baseDir}) is the pipeline root, i.e. the directory holding nf-test.config.
+    // It is interpolated by nf-test before the process block is handed to Nextflow.
+
+    test("yeast_small - fasta") {
+
+        when {
+            process {
+                """
+                input[0] = Channel.of([
+                    [ id:'scer_small' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/scer_small.fa", checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() },
+                // Parity with v1: the 2bit must be byte-identical to the v1-made fixture
+                { assert path(process.out.twobit[0][1]).md5 == path("${projectDir}/tests/data/yeast_small/scer_small.2bit").md5 }
+            )
+        }
+    }
+
+    test("yeast_small - fasta.gz") {
+
+        when {
+            // Build a gzipped copy of the FASTA fixture inside this test's own directory
+            def fasta_gz = new File("${launchDir}/scer_small.fa.gz")
+            fasta_gz.withOutputStream { os ->
+                new java.util.zip.GZIPOutputStream(os).withCloseable { gz ->
+                    gz << new File("${projectDir}/tests/data/yeast_small/scer_small.fa").bytes
+                }
+            }
+            process {
+                """
+                input[0] = Channel.of([
+                    [ id:'scer_small' ], // meta map
+                    file("${fasta_gz}", checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() },
+                // A gzipped FASTA must give the same 2bit as the plain FASTA (and as v1)
+                { assert path(process.out.twobit[0][1]).md5 == path("${projectDir}/tests/data/yeast_small/scer_small.2bit").md5 }
+            )
+        }
+    }
+
+    test("yeast_small - fasta - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = Channel.of([
+                    [ id:'scer_small' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/scer_small.fa", checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+}

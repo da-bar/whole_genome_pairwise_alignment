@@ -1,0 +1,70 @@
+{
+    "yeast_small - all.chain": {
+        "content": [
+            [
+                [
+                    {
+                        "id": "test"
+                    },
+                    "test.chain.gz:md5,ad161a5b7d4b34453b1ee0f9e9ae43fa"
+                ]
+            ],
+            "ad161a5b7d4b34453b1ee0f9e9ae43fa",
+            {
+                "versions_ucsc": [
+                    [
+                        "UCSC_CHAINPRENET",
+                        "ucsc",
+                        "482"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-09-25T10:21:36.939354",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "yeast_small - all.chain - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.chain.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        "UCSC_CHAINPRENET",
+                        "ucsc",
+                        "482"
+                    ]
+                ],
+                "chain": [
+                    [
+                        {
+                            "id": "test"
+                        },
+                        "test.chain.gz:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_ucsc": [
+                    [
+                        "UCSC_CHAINPRENET",
+                        "ucsc",
+                        "482"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-09-25T10:21:39.480187",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

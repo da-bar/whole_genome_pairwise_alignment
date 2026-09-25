@@ -1,0 +1,163 @@
+nextflow_process {
+
+    name "Test Process UCSC_CHAINMERGESORT"
+    script "../main.nf"
+    process "UCSC_CHAINMERGESORT"
+    tag "modules"
+    tag "modules_local"
+    tag "ucsc"
+    tag "ucsc/chainmergesort"
+
+    // In nf-test, ${projectDir} (alias ${baseDir}) is the pipeline root, i.e. the directory holding nf-test.config.
+    // It is interpolated by nf-test before the process block is handed to Nextflow.
+
+    test("yeast_small - chain") {
+
+        when {
+            process {
+                """
+                input[0] = Channel.of([
+                    [ id:'small' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/small.chain", checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            def gunzip_md5 = { f -> new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { it.bytes.md5() } }
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() },
+                // Parity with v1 (which used -inputList): the decompressed chain must equal the v1-made small.all.chain
+                { assert gunzip_md5(process.out.chain[0][1]) == path("${projectDir}/tests/data/yeast_small/small.all.chain").md5 }
+            )
+        }
+    }
+
+    test("yeast_small - chain.gz") {
+
+        when {
+            // Build a gzipped copy of the chain fixture inside this test's own directory
+            def chain_gz = new File("${launchDir}/small.chain.gz")
+            chain_gz.withOutputStream { os ->
+                new java.util.zip.GZIPOutputStream(os).withCloseable { gz ->
+                    gz << new File("${projectDir}/tests/data/yeast_small/small.chain").bytes
+                }
+            }
+            process {
+                """
+                input[0] = Channel.of([
+                    [ id:'small_all' ], // meta map
+                    file("${chain_gz}", checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            def gunzip_md5 = { f -> new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { it.bytes.md5() } }
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() },
+                // A gzipped chain input must give the same result as the plain one (and as v1)
+                { assert gunzip_md5(process.out.chain[0][1]) == path("${projectDir}/tests/data/yeast_small/small.all.chain").md5 }
+            )
+        }
+    }
+
+    test("yeast_small - three chains - input order does not matter") {
+
+        when {
+            // Split the chain fixture round-robin into three chain files (each keeps the ## header lines)
+            def header = []
+            def records = []
+            new File("${projectDir}/tests/data/yeast_small/small.chain").eachLine { line ->
+                if (line.startsWith('#')) {
+                    header << line
+                } else if (line.startsWith('chain')) {
+                    records << [line]
+                } else if (records) {
+                    records[-1] << line
+                }
+            }
+            def parts = (0..2).collect { i -> new File("${launchDir}/part${i}.chain") }
+            parts.eachWithIndex { part, i ->
+                def lines = header + records.withIndex().findAll { rec, j -> j % 3 == i }.collect { rec, j -> rec }.flatten()
+                part.text = lines.join('\n') + '\n'
+            }
+            process {
+                """
+                input[0] = Channel.of(
+                    [ [ id:'ordered' ],  [ file("${parts[0]}"), file("${parts[1]}"), file("${parts[2]}") ] ],
+                    [ [ id:'shuffled' ], [ file("${parts[2]}"), file("${parts[0]}"), file("${parts[1]}") ] ]
+                )
+                """
+            }
+        }
+
+        then {
+            def gunzip_md5 = { f -> new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { it.bytes.md5() } }
+            def ordered  = process.out.chain.find { meta, f -> meta.id == 'ordered' }[1]
+            def shuffled = process.out.chain.find { meta, f -> meta.id == 'shuffled' }[1]
+            def shuffled_cmd = new File(new File(shuffled.toString()).parentFile, '.command.sh').text
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() },
+                // chainMergeSort breaks score ties by input order; the module sorts the inputs by name, so both agree
+                { assert gunzip_md5(ordered) == gunzip_md5(shuffled) },
+                { assert shuffled_cmd.contains('part0.chain part1.chain part2.chain') }
+            )
+        }
+    }
+
+    test("yeast_small - chain.gz - same input and output name") {
+
+        when {
+            def chain_gz = new File("${launchDir}/small.chain.gz")
+            chain_gz.withOutputStream { os ->
+                new java.util.zip.GZIPOutputStream(os).withCloseable { gz ->
+                    gz << new File("${projectDir}/tests/data/yeast_small/small.chain").bytes
+                }
+            }
+            process {
+                """
+                input[0] = Channel.of([
+                    [ id:'small' ], // meta map: output would be small.chain.gz, same as the input
+                    file("${chain_gz}", checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.failed },
+                { assert (process.stdout + process.stderr).any { line -> line.contains('Input and output names are the same') } }
+            )
+        }
+    }
+
+    test("yeast_small - chain - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = Channel.of([
+                    [ id:'small' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/small.chain", checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+}

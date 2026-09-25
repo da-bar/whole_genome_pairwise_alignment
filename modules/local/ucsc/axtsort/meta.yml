@@ -1,0 +1,70 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: ucsc_axtsort
+description: Sort axt alignments by target (default) or query position, or by score
+keywords:
+  - axt
+  - sort
+  - alignment
+  - ucsc
+  - ucsc/axtsort
+tools:
+  - ucsc:
+      description: |
+        axtSort (UCSC kent utilities) sorts axt alignments, by default on
+        target sequence and start position. The whole input is held in memory.
+      homepage: http://hgdownload.cse.ucsc.edu/admin/exe/
+      documentation: https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/FOOTER.txt
+      tool_dev_url: https://github.com/ucscGenomeBrowser/kent/tree/master/src/hg/mouseStuff/axtSort
+      licence: ["varies; see http://genome.ucsc.edu/license"]
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. [ id:'test' ]
+    - axt:
+        type: file
+        description: Axt alignments (e.g. from netToAxt), optionally gzipped
+        pattern: "*.{axt,axt.gz}"
+        ontologies:
+          - edam: http://edamontology.org/format_3013 # axt
+output:
+  axt:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. [ id:'test' ]
+      - "*.axt.gz":
+          type: file
+          description: Gzipped, sorted axt alignments
+          pattern: "*.axt.gz"
+          ontologies:
+            - edam: http://edamontology.org/format_3013 # axt
+            - edam: http://edamontology.org/format_3989 # GZIP format
+  versions_ucsc:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The expression to obtain the version of the tool
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The expression to obtain the version of the tool
+authors:
+  - "@da-bar"
+maintainers:
+  - "@da-bar"

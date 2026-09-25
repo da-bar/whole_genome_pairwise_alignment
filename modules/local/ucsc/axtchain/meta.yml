@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "ucsc_axtchain"
+description: Chain together PSL alignments between a target and a query genome with UCSC axtChain
+keywords:
+  - chain
+  - psl
+  - alignment
+  - whole-genome alignment
+  - ucsc
+  - ucsc/axtchain
+tools:
+  - ucsc:
+      description: |
+        axtChain from the UCSC Genome Browser (kent) utilities joins gapless or gapped
+        alignment blocks (here read as PSL with -psl) into chains, scoring them with a
+        substitution matrix (-scoreScheme) and a gap cost scheme (-linearGap). axtChain requires
+        -linearGap=loose|medium|<file>, so it must be given in task.ext.args (CNEr "near" preset:
+        -minScore=5000 -linearGap=medium).
+      homepage: "https://hgdownload.soe.ucsc.edu/admin/exe/"
+      documentation: "https://genomewiki.ucsc.edu/index.php/Chains_Nets"
+      tool_dev_url: "https://github.com/ucscGenomeBrowser/kent"
+      licence: ["varies; see http://genome.ucsc.edu/license"]
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'target_query' ]`
+    - psl:
+        type: file
+        description: Alignments of the query to the target in PSL format, plain or gzipped
+        pattern: "*.{psl,psl.gz}"
+        ontologies:
+          - edam: http://edamontology.org/format_3007 # PSL
+    - target_twobit:
+        type: file
+        description: Target genome in UCSC 2bit format
+        pattern: "*.2bit"
+        ontologies:
+          - edam: http://edamontology.org/format_3009 # 2bit
+    - query_twobit:
+        type: file
+        description: Query genome in UCSC 2bit format
+        pattern: "*.2bit"
+        ontologies:
+          - edam: http://edamontology.org/format_3009 # 2bit
+  - score_scheme:
+      type: file
+      description: |
+        Optional substitution matrix in axtChain -scoreScheme format (a header line "A C G T"
+        followed by four rows of scores). Pass an empty list `[]` to use the axtChain default.
+      pattern: "*"
+      ontologies: []
+output:
+  chain:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'target_query' ]`
+      - "*.chain.gz":
+          type: file
+          description: Gzipped chain file
+          pattern: "*.chain.gz"
+          ontologies:
+            - edam: http://edamontology.org/format_3982 # CHAIN
+  versions_ucsc:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The expression to obtain the version of the tool
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The expression to obtain the version of the tool
+authors:
+  - "@da-bar"
+maintainers:
+  - "@da-bar"

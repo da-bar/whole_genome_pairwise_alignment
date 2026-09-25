@@ -1,0 +1,97 @@
+name: ucsc_chainnet
+description: Make alignment nets out of chains (UCSC kent chainNet)
+keywords:
+  - chain
+  - net
+  - alignment
+  - ucsc
+  - ucsc/chainnet
+tools:
+  - ucsc:
+      description: |
+        chainNet makes alignment nets out of chains: a hierarchical, non-overlapping
+        arrangement of the best chains over the target genome, plus the corresponding
+        net over the query genome. Input chains must be sorted by score.
+      homepage: http://hgdownload.cse.ucsc.edu/admin/exe/
+      documentation: https://genome.ucsc.edu/goldenPath/help/net.html
+      tool_dev_url: https://github.com/ucscGenomeBrowser/kent/tree/master/src/hg/mouseStuff/chainNet
+      licence: ["varies; see http://genome.ucsc.edu/license"]
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. [ id:'test' ]
+    - chain:
+        type: file
+        description: Chain file sorted by score (e.g. chainPreNet output), optionally gzipped
+        pattern: "*.{chain,chain.gz}"
+        ontologies:
+          - edam: http://edamontology.org/format_3982 # CHAIN
+    - target_sizes:
+        type: file
+        description: |
+          Tab-separated sequence sizes of the target genome ("name<TAB>length"), optionally gzipped
+        pattern: "*.{sizes,txt,tsv}{,.gz}"
+        ontologies:
+          - edam: http://edamontology.org/format_3475 # TSV
+    - query_sizes:
+        type: file
+        description: |
+          Tab-separated sequence sizes of the query genome ("name<TAB>length"), optionally gzipped
+        pattern: "*.{sizes,txt,tsv}{,.gz}"
+        ontologies:
+          - edam: http://edamontology.org/format_3475 # TSV
+output:
+  target_net:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. [ id:'test' ]
+      - "*.target.net.gz":
+          type: file
+          description: Gzipped net over the target genome
+          pattern: "*.target.net.gz"
+          ontologies:
+            - edam: http://edamontology.org/format_3983 # NET
+            - edam: http://edamontology.org/format_3989 # GZIP format
+  query_net:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. [ id:'test' ]
+      - "*.query.net.gz":
+          type: file
+          description: Gzipped net over the query genome
+          pattern: "*.query.net.gz"
+          ontologies:
+            - edam: http://edamontology.org/format_3983 # NET
+            - edam: http://edamontology.org/format_3989 # GZIP format
+  versions_ucsc:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The expression to obtain the version of the tool
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The expression to obtain the version of the tool
+authors:
+  - "@da-bar"
+maintainers:
+  - "@da-bar"

@@ -1,0 +1,84 @@
+{
+    "yeast_small - 2bit": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "scer_small"
+                        },
+                        "scer_small.sizes:md5,90acd33e72cd4ce059a3b7f04cc75b58"
+                    ]
+                ],
+                "1": [
+                    [
+                        "UCSC_TWOBITINFO",
+                        "ucsc",
+                        "482"
+                    ]
+                ],
+                "sizes": [
+                    [
+                        {
+                            "id": "scer_small"
+                        },
+                        "scer_small.sizes:md5,90acd33e72cd4ce059a3b7f04cc75b58"
+                    ]
+                ],
+                "versions_ucsc": [
+                    [
+                        "UCSC_TWOBITINFO",
+                        "ucsc",
+                        "482"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-09-25T10:24:29.257539",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "yeast_small - 2bit - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "scer_small"
+                        },
+                        "scer_small.sizes:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "1": [
+                    [
+                        "UCSC_TWOBITINFO",
+                        "ucsc",
+                        "482"
+                    ]
+                ],
+                "sizes": [
+                    [
+                        {
+                            "id": "scer_small"
+                        },
+                        "scer_small.sizes:md5,d41d8cd98f00b204e9800998ecf8427e"
+                    ]
+                ],
+                "versions_ucsc": [
+                    [
+                        "UCSC_TWOBITINFO",
+                        "ucsc",
+                        "482"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-09-25T10:24:31.9507",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

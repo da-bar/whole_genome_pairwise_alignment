@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "ucsc_fatotwobit"
+description: Convert a (optionally gzipped) FASTA file to the UCSC 2bit format, keeping soft-masking
+keywords:
+  - fasta
+  - 2bit
+  - twobit
+  - genome
+  - ucsc
+  - ucsc/fatotwobit
+tools:
+  - ucsc:
+      description: |
+        faToTwoBit from the UCSC Genome Browser (kent) utilities converts DNA from FASTA
+        to the compact, randomly accessible 2bit format. Lower-case (soft-masked) bases are
+        recorded as masked blocks unless -noMask is given.
+      homepage: "https://hgdownload.soe.ucsc.edu/admin/exe/"
+      documentation: "https://genome.ucsc.edu/goldenPath/help/twoBit.html"
+      tool_dev_url: "https://github.com/ucscGenomeBrowser/kent"
+      licence: ["varies; see http://genome.ucsc.edu/license"]
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'genome' ]`
+    - fasta:
+        type: file
+        description: Genome FASTA file, plain or gzipped
+        pattern: "*.{fa,fasta,fna,fa.gz,fasta.gz,fna.gz}"
+        ontologies:
+          - edam: http://edamontology.org/format_1929 # FASTA
+output:
+  twobit:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'genome' ]`
+      - "*.2bit":
+          type: file
+          description: Genome in UCSC 2bit format
+          pattern: "*.2bit"
+          ontologies:
+            - edam: http://edamontology.org/format_3009 # 2bit
+  versions_ucsc:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The expression to obtain the version of the tool
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The expression to obtain the version of the tool
+authors:
+  - "@da-bar"
+maintainers:
+  - "@da-bar"

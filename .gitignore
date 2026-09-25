@@ -8,3 +8,8 @@ testing*
 *.pyc
 null/
 .lineage/
+# test fixtures live in tests/data (the "data/" rule above is for v1-style data folders)
+!tests/data/
+.nf-test/
+.nf-test.log
+.nf-test-*.nf

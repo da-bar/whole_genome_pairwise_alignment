@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: ucsc_nettoaxt
+description: Convert a net (and the chains it was built from) to an axt pairwise alignment
+keywords:
+  - net
+  - chain
+  - axt
+  - alignment
+  - ucsc
+  - ucsc/nettoaxt
+tools:
+  - ucsc:
+      description: |
+        netToAxt (UCSC kent utilities) converts a net file and the chain file
+        it was built from into axt alignments, fetching the aligned sequences
+        from the target and query 2bit files.
+      homepage: http://hgdownload.cse.ucsc.edu/admin/exe/
+      documentation: https://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/FOOTER.txt
+      tool_dev_url: https://github.com/ucscGenomeBrowser/kent/tree/master/src/hg/mouseStuff/netToAxt
+      licence: ["varies; see http://genome.ucsc.edu/license"]
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. [ id:'test' ]
+    - net:
+        type: file
+        description: Net file (e.g. from chainNet/netSyntenic), optionally gzipped
+        pattern: "*.{net,net.gz}"
+        ontologies:
+          - edam: http://edamontology.org/format_3983 # NET
+    - chain:
+        type: file
+        description: Chain file the net was built from (e.g. from chainPreNet),
+          optionally gzipped
+        pattern: "*.{chain,chain.gz}"
+        ontologies:
+          - edam: http://edamontology.org/format_3982 # CHAIN
+    - target_twobit:
+        type: file
+        description: Target (reference) genome in 2bit format
+        pattern: "*.2bit"
+        ontologies:
+          - edam: http://edamontology.org/format_3009 # 2bit
+    - query_twobit:
+        type: file
+        description: Query genome in 2bit format
+        pattern: "*.2bit"
+        ontologies:
+          - edam: http://edamontology.org/format_3009 # 2bit
+output:
+  axt:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. [ id:'test' ]
+      - "*.axt.gz":
+          type: file
+          description: Gzipped axt alignments in net order (not sorted; see
+            ucsc/axtsort)
+          pattern: "*.axt.gz"
+          ontologies:
+            - edam: http://edamontology.org/format_3013 # axt
+            - edam: http://edamontology.org/format_3989 # GZIP format
+  versions_ucsc:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The expression to obtain the version of the tool
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - ucsc:
+          type: string
+          description: The name of the tool
+      - "482":
+          type: string
+          description: The expression to obtain the version of the tool
+authors:
+  - "@da-bar"
+maintainers:
+  - "@da-bar"

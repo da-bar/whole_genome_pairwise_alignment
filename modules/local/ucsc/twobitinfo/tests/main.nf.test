@@ -1,0 +1,59 @@
+nextflow_process {
+
+    name "Test Process UCSC_TWOBITINFO"
+    script "../main.nf"
+    process "UCSC_TWOBITINFO"
+    tag "modules"
+    tag "modules_local"
+    tag "ucsc"
+    tag "ucsc/twobitinfo"
+
+    // In nf-test, ${projectDir} (alias ${baseDir}) is the pipeline root, i.e. the directory holding nf-test.config.
+    // It is interpolated by nf-test before the process block is handed to Nextflow.
+
+    test("yeast_small - 2bit") {
+
+        when {
+            process {
+                """
+                input[0] = Channel.of([
+                    [ id:'scer_small' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/scer_small.2bit", checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() },
+                // Parity with v1: the sizes file must be byte-identical to the v1-made fixture
+                { assert path(process.out.sizes[0][1]).md5 == path("${projectDir}/tests/data/yeast_small/scer_small.sizes").md5 }
+            )
+        }
+    }
+
+    test("yeast_small - 2bit - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = Channel.of([
+                    [ id:'scer_small' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/scer_small.2bit", checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+}

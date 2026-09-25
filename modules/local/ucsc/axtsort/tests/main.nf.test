@@ -1,0 +1,103 @@
+nextflow_process {
+
+    name "Test Process UCSC_AXTSORT"
+    script "../main.nf"
+    process "UCSC_AXTSORT"
+    config "./nextflow.config"
+
+    tag "modules"
+    tag "modules_local"
+    tag "ucsc"
+    tag "ucsc/axtsort"
+    tag "ucsc/nettoaxt"
+
+    // Fixtures: tests/data/yeast_small (made with the v1.0.0 CNEr command lines).
+    // projectDir resolves to the repository root (the nf-test.config directory),
+    // both inside the Nextflow process block and in the nf-test then block.
+
+    test("yeast_small - axt") {
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/small.unsorted.axt", checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            // v1 parity: decompressed output must be byte-identical to the v1 axtSort output
+            def gunzipMd5 = { f -> new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { it.bytes.md5() } }
+            def v1_md5 = path("${projectDir}/tests/data/yeast_small/small.net.axt").bytes.md5()
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() },
+                { assert gunzipMd5(process.out.axt[0][1]) == v1_md5 }
+            )
+        }
+    }
+
+    test("yeast_small - axt.gz from UCSC_NETTOAXT") {
+
+        setup {
+            run("UCSC_NETTOAXT") {
+                script "../../nettoaxt/main.nf"
+                process {
+                    """
+                    input[0] = [
+                        [ id:'test' ], // meta map
+                        file("${projectDir}/tests/data/yeast_small/small.noClass.net", checkIfExists: true),
+                        file("${projectDir}/tests/data/yeast_small/small.all.pre.chain", checkIfExists: true),
+                        file("${projectDir}/tests/data/yeast_small/scer_small.2bit", checkIfExists: true),
+                        file("${projectDir}/tests/data/yeast_small/seub_small.2bit", checkIfExists: true)
+                    ]
+                    """
+                }
+            }
+        }
+
+        when {
+            process {
+                """
+                input[0] = UCSC_NETTOAXT.out.axt
+                """
+            }
+        }
+
+        then {
+            def gunzipMd5 = { f -> new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { it.bytes.md5() } }
+            def v1_md5 = path("${projectDir}/tests/data/yeast_small/small.net.axt").bytes.md5()
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() },
+                { assert gunzipMd5(process.out.axt[0][1]) == v1_md5 }
+            )
+        }
+    }
+
+    test("yeast_small - axt - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/small.unsorted.axt", checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+}
