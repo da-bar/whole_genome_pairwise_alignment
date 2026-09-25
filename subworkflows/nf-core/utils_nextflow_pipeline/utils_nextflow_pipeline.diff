@@ -1,0 +1,26 @@
+Changes in component 'nf-core/utils_nextflow_pipeline'
+'subworkflows/nf-core/utils_nextflow_pipeline/meta.yml' is unchanged
+Changes in 'utils_nextflow_pipeline/main.nf':
+--- subworkflows/nf-core/utils_nextflow_pipeline/main.nf
++++ subworkflows/nf-core/utils_nextflow_pipeline/main.nf
+@@ -104,12 +104,12 @@
+         channels = config.channels
+     }
+     catch (NullPointerException e) {
+-        log.debug(e)
++        log.debug(e.toString())
+         log.warn("Could not verify conda channel configuration.")
+         return null
+     }
+     catch (IOException e) {
+-        log.debug(e)
++        log.debug(e.toString())
+         log.warn("Could not verify conda channel configuration.")
+         return null
+     }
+
+'subworkflows/nf-core/utils_nextflow_pipeline/tests/main.function.nf.test' is unchanged
+'subworkflows/nf-core/utils_nextflow_pipeline/tests/main.function.nf.test.snap' is unchanged
+'subworkflows/nf-core/utils_nextflow_pipeline/tests/nextflow.config' is unchanged
+'subworkflows/nf-core/utils_nextflow_pipeline/tests/main.workflow.nf.test' is unchanged
+************************************************************
