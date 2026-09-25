@@ -1,0 +1,2 @@
+id,target,query,preset
+S_cerevisiae_vs_S_eubayanus,https://raw.githubusercontent.com/da-bar/whole_genome_pairwise_alignment/0280044394116c215d12f91ad8d257a77d72dc1e/data/S_cerevisiae.fa,https://raw.githubusercontent.com/da-bar/whole_genome_pairwise_alignment/0280044394116c215d12f91ad8d257a77d72dc1e/data/S_eubayanus.fa,near

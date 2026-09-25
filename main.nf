@@ -28,7 +28,7 @@ include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_wgpa
 workflow DABAR_WGPA {
 
     take:
-    samplesheet // channel: samplesheet read in from --input
+    samplesheet // channel: [ val(meta), path(target_fasta), path(query_fasta) ], one item per genome pair
 
     main:
 
@@ -38,6 +38,8 @@ workflow DABAR_WGPA {
     WGPA (
         samplesheet,
         params.outdir,
+        // With the strict syntax parser a CLI value such as '--liftover false' arrives as the string 'false'
+        params.liftover.toString().toBoolean(),
     )
 }
 /*
@@ -59,6 +61,7 @@ workflow {
         args,
         params.outdir,
         params.input,
+        params.preset,
         params.help,
         params.help_full,
         params.show_hidden

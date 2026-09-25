@@ -19,8 +19,8 @@
                     "schema": "assets/schema_input.json",
                     "mimetype": "text/csv",
                     "pattern": "^\\S+\\.csv$",
-                    "description": "Path to comma-separated file containing information about the samples in the experiment.",
-                    "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row.",
+                    "description": "Path to comma-separated file listing the genome pairs to align.",
+                    "help_text": "A CSV file with a header row and one row per genome pair, with the columns `id` (unique pair id), `target` (target genome FASTA), `query` (query genome FASTA) and, optionally, `preset` (`near`, `medium` or `far`; empty rows use `--preset`). See the usage docs.",
                     "fa_icon": "fas fa-file-csv"
                 },
                 "outdir": {
@@ -35,6 +35,29 @@
                     "fa_icon": "fas fa-envelope",
                     "help_text": "Set this parameter to your e-mail address to get a summary e-mail with details of the run sent to you when the workflow exits. If set in your user config file (`~/.nextflow/config`) then you don't need to specify this on the command line for every run.",
                     "pattern": "^([a-zA-Z0-9_\\-\\.]+)@([a-zA-Z0-9_\\-\\.]+)\\.([a-zA-Z]{2,5})$"
+                }
+            }
+        },
+        "alignment_options": {
+            "title": "Alignment options",
+            "type": "object",
+            "fa_icon": "fas fa-align-center",
+            "description": "Options for the alignment, chaining and liftOver steps.",
+            "properties": {
+                "preset": {
+                    "type": "string",
+                    "default": "near",
+                    "enum": ["near", "medium", "far"],
+                    "description": "Default CNEr preset for pairs whose samplesheet `preset` column is empty.",
+                    "help_text": "The CNEr presets set the lastal and axtChain options and scoring matrices. `near` (lastal -a 600 -b 150 -e 3000, axtChain -minScore=5000 -linearGap=medium) is for closely related genomes (e.g. human-chimpanzee); `medium` (HOXD70 matrix; lastal -a 400 -b 30 -e 4500, axtChain -minScore=3000 -linearGap=medium) for e.g. human-mouse; `far` (HOXD55 matrix; lastal -a 400 -b 30 -e 6000, axtChain -minScore=5000 -linearGap=loose) for distant genomes (e.g. human-chicken). v1.0.0 always used `near`.",
+                    "fa_icon": "fas fa-sliders-h"
+                },
+                "liftover": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Make UCSC liftOver chains (<target>To<Query>.over.chain.gz) for every pair.",
+                    "help_text": "The chains of the syntenic net, made with netChainSubset and chainStitchId as in UCSC doBlastzChainNet.pl. Use `--liftover false` to skip them.",
+                    "fa_icon": "fas fa-exchange-alt"
                 }
             }
         },
@@ -166,6 +189,9 @@
     "allOf": [
         {
             "$ref": "#/$defs/input_output_options"
+        },
+        {
+            "$ref": "#/$defs/alignment_options"
         },
         {
             "$ref": "#/$defs/institutional_config_options"

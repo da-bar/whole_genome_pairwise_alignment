@@ -1,0 +1,44 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "prepare_genomes"
+description: |
+  Convert every distinct genome FASTA of the samplesheet to UCSC 2bit and sizes files, once per
+  FASTA file however many pairs use it (as target or query), and attach them to each pair
+keywords:
+  - 2bit
+  - chrom sizes
+  - genome
+  - ucsc
+components:
+  - ucsc/fatotwobit
+  - ucsc/twobitinfo
+input:
+  - ch_pairs:
+      type: file
+      description: |
+        Channel with one item per genome pair
+        Structure: [ val(meta), path(target_fasta), path(query_fasta) ]
+        meta: [ id, preset, target_name, query_name ]
+      pattern: "*.{fa,fasta,fna}{,.gz}"
+output:
+  - twobit:
+      type: file
+      description: |
+        One 2bit file per distinct FASTA
+        Structure: [ val(meta), path(2bit) ], meta: [ id: genome name ]
+      pattern: "*.2bit"
+  - sizes:
+      type: file
+      description: |
+        One sizes file ("name<TAB>length", in 2bit order) per distinct FASTA
+        Structure: [ val(meta), path(sizes) ], meta: [ id: genome name ]
+      pattern: "*.sizes"
+  - genomes:
+      type: file
+      description: |
+        The target and query genome files of each pair
+        Structure: [ val(meta), path(target_2bit), path(target_sizes), path(query_2bit), path(query_sizes) ]
+      pattern: "*.{2bit,sizes}"
+authors:
+  - "@da-bar"
+maintainers:
+  - "@da-bar"

@@ -1,0 +1,53 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "pairwise_align"
+description: |
+  Align each query genome to its target genome with LAST (lastdb -c, lastal with the CNEr preset
+  options and scoring matrix) and convert the MAF alignments to PSL. One LAST index is built per
+  distinct (target FASTA, lastdb arguments).
+keywords:
+  - alignment
+  - whole-genome alignment
+  - last
+  - maf
+  - psl
+components:
+  - last/lastdb
+  - last/lastal
+  - last/mafconvert
+input:
+  - ch_pairs:
+      type: file
+      description: |
+        Channel with one item per genome pair
+        Structure: [ val(meta), path(target_fasta), path(query_fasta) ]
+        meta: [ id, preset, target_name, query_name ]
+      pattern: "*.{fa,fasta,fna}{,.gz}"
+  - ch_lastal_matrix:
+      type: file
+      description: |
+        The scoring matrix of each pair's preset, for lastal -p
+        Structure: [ val(meta), path(lastal_matrix) ]
+      pattern: "*.lastal.mat"
+output:
+  - maf:
+      type: file
+      description: |
+        Gzipped MAF alignment of each pair
+        Structure: [ val(meta), path(maf.gz) ]
+      pattern: "*.maf.gz"
+  - stats:
+      type: file
+      description: |
+        Alignment statistics from LAST_LASTAL
+        Structure: [ val(meta), path(tsv) ]
+      pattern: "*.tsv"
+  - psl:
+      type: file
+      description: |
+        Gzipped PSL alignment of each pair
+        Structure: [ val(meta), path(psl.gz) ]
+      pattern: "*.psl.gz"
+authors:
+  - "@da-bar"
+maintainers:
+  - "@da-bar"

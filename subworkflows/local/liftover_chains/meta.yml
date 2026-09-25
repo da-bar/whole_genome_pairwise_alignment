@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "liftover_chains"
+description: |
+  Make UCSC liftOver chains from the syntenic net and all chains of a pair, as UCSC
+  doBlastzChainNet.pl does: netChainSubset -verbose=0, then chainStitchId
+keywords:
+  - liftover
+  - chain
+  - net
+  - ucsc
+components:
+  - ucsc/netchainsubset
+  - ucsc/chainstitchid
+input:
+  - ch_net:
+      type: file
+      description: |
+        Syntenic net of each pair
+        Structure: [ val(meta), path(noClass.net) ]
+      pattern: "*.net{,.gz}"
+  - ch_all_chain:
+      type: file
+      description: |
+        All chains of each pair (chainMergeSort output, before chainPreNet)
+        Structure: [ val(meta), path(all.chain) ]
+      pattern: "*.chain{,.gz}"
+output:
+  - over_chain:
+      type: file
+      description: |
+        liftOver chains (<target>To<Query>.over.chain.gz)
+        Structure: [ val(meta), path(over.chain.gz) ]
+      pattern: "*.over.chain.gz"
+authors:
+  - "@da-bar"
+maintainers:
+  - "@da-bar"

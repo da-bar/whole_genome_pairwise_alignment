@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/subworkflows/yaml-schema.json
+name: "chain_net"
+description: |
+  Chain and net pairwise alignments with the UCSC kent utilities as CNEr does: axtChain,
+  chainMergeSort, chainPreNet, chainNet, netSyntenic, netToAxt and axtSort
+keywords:
+  - chain
+  - net
+  - axt
+  - whole-genome alignment
+  - ucsc
+components:
+  - ucsc/axtchain
+  - ucsc/chainmergesort
+  - ucsc/chainprenet
+  - ucsc/chainnet
+  - ucsc/netsyntenic
+  - ucsc/nettoaxt
+  - ucsc/axtsort
+input:
+  - ch_psl:
+      type: file
+      description: |
+        PSL alignment of each pair
+        Structure: [ val(meta), path(psl) ]
+      pattern: "*.psl{,.gz}"
+  - ch_genomes:
+      type: file
+      description: |
+        The target and query genome files of each pair
+        Structure: [ val(meta), path(target_2bit), path(target_sizes), path(query_2bit), path(query_sizes) ]
+      pattern: "*.{2bit,sizes}"
+  - ch_score_scheme:
+      type: file
+      description: |
+        The scoring matrix of each pair's preset, for axtChain -scoreScheme
+        Structure: [ val(meta), path(axtchain_matrix) ]
+      pattern: "*.axtchain.mat"
+output:
+  - chain:
+      type: file
+      description: "axtChain chains. Structure: [ val(meta), path(chain.gz) ]"
+      pattern: "*.chain.gz"
+  - all_chain:
+      type: file
+      description: "Merged and sorted chains. Structure: [ val(meta), path(all.chain.gz) ]"
+      pattern: "*.all.chain.gz"
+  - pre_chain:
+      type: file
+      description: "Chains that can be part of a net (chainPreNet). Structure: [ val(meta), path(all.pre.chain.gz) ]"
+      pattern: "*.all.pre.chain.gz"
+  - target_net:
+      type: file
+      description: "Net on the target genome. Structure: [ val(meta), path(target.net.gz) ]"
+      pattern: "*.target.net.gz"
+  - query_net:
+      type: file
+      description: "Net on the query genome. Structure: [ val(meta), path(query.net.gz) ]"
+      pattern: "*.query.net.gz"
+  - net:
+      type: file
+      description: "Target net with synteny information (netSyntenic). Structure: [ val(meta), path(noClass.net.gz) ]"
+      pattern: "*.noClass.net.gz"
+  - axt:
+      type: file
+      description: "Alignments of the net, sorted by target position. Structure: [ val(meta), path(net.axt.gz) ]"
+      pattern: "*.net.axt.gz"
+authors:
+  - "@da-bar"
+maintainers:
+  - "@da-bar"

@@ -2,32 +2,39 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/da-bar/wgpa/master/assets/schema_input.json",
     "title": "da-bar/wgpa pipeline - params.input schema",
-    "description": "Schema for the file provided with params.input",
+    "description": "Schema for the file provided with params.input: one row per genome pair (target and query FASTA)",
     "type": "array",
     "items": {
         "type": "object",
         "properties": {
-            "sample": {
+            "id": {
                 "type": "string",
-                "pattern": "^\\S+$",
-                "errorMessage": "Sample name must be provided and cannot contain spaces",
+                "pattern": "^[^\\s/]+$",
+                "errorMessage": "Pair id must be provided and cannot contain spaces or '/'",
                 "meta": ["id"]
             },
-            "fastq_1": {
+            "target": {
                 "type": "string",
                 "format": "file-path",
                 "exists": true,
-                "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q\\.gz$",
-                "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+                "pattern": "^\\S+\\.(fa|fasta|fna)(\\.gz)?$",
+                "errorMessage": "Target FASTA must be provided, cannot contain spaces and must have extension '.fa', '.fasta' or '.fna', optionally followed by '.gz'"
             },
-            "fastq_2": {
+            "query": {
                 "type": "string",
                 "format": "file-path",
                 "exists": true,
-                "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q\\.gz$",
-                "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+                "pattern": "^\\S+\\.(fa|fasta|fna)(\\.gz)?$",
+                "errorMessage": "Query FASTA must be provided, cannot contain spaces and must have extension '.fa', '.fasta' or '.fna', optionally followed by '.gz'"
+            },
+            "preset": {
+                "type": "string",
+                "enum": ["near", "medium", "far"],
+                "errorMessage": "Preset must be one of 'near', 'medium' or 'far', or left empty to use --preset",
+                "meta": ["preset"]
             }
         },
-        "required": ["sample", "fastq_1"]
-    }
+        "required": ["id", "target", "query"]
+    },
+    "uniqueEntries": ["id"]
 }
