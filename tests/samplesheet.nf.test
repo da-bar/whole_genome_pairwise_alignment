@@ -1,0 +1,123 @@
+nextflow_pipeline {
+
+    name "Test pipeline samplesheet cases"
+    script "../main.nf"
+    tag "pipeline"
+    tag "samplesheet"
+
+    // Samplesheet cases that the default test does not cover, on the small yeast fixtures in tests/data/yeast_small.
+    // Each test writes its samplesheet to its own launch directory.
+
+    test("self-alignment - yeast_small") {
+
+        // The same FASTA file as target and query: the 2bit and sizes files of the target and the query
+        // have the same name, so the UCSC modules must stage them apart (target/ and query/)
+
+        when {
+            def samplesheet = new File("${launchDir}/samplesheet_self.csv")
+            samplesheet.text = [
+                'id,target,query,preset',
+                "scer_small_self,${projectDir}/tests/data/yeast_small/scer_small.fa,${projectDir}/tests/data/yeast_small/scer_small.fa,near",
+            ].join('\n') + '\n'
+            params {
+                input  = samplesheet.toString()
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            def pair = "${params.outdir}/scer_small_self"
+            def stem = 'scer_small_scer_small'
+            def gunzip_lines = { f ->
+                new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { gz -> gz.getText('UTF-8').readLines() }
+            }
+            // Warnings are written to the Nextflow log, not to the stdout that nf-test captures
+            def nextflow_log = new File("${metaDir}/nextflow.log").text
+            // stable_path: All files + folders in ${params.outdir}/ with a stable path (including file name)
+            def stable_path = getAllFilesFromDir(params.outdir, relative: true, includeDir: true, ignore: ['pipeline_info/*.{html,json,txt}'])
+            // stable_content: All files in ${params.outdir}/ with stable content
+            def stable_content = getAllFilesFromDir(params.outdir, ignoreFile: 'tests/.nftignore')
+            assert workflow.success
+            assertAll(
+                { assert nextflow_log.contains("Pair 'scer_small_self' aligns scer_small.fa to itself") },
+                // One genome, so one 2bit and one sizes file
+                { assert path("${params.outdir}/genomes/scer_small.2bit").md5 == path("${projectDir}/tests/data/yeast_small/scer_small.2bit").md5 },
+                { assert new File("${params.outdir}/genomes").list().sort() == [ 'scer_small.2bit', 'scer_small.sizes' ] },
+                // The chains, nets, axt and liftOver files are not empty
+                { assert gunzip_lines("${pair}/chains/${stem}.all.chain.gz").any { line -> line.startsWith('chain ') } },
+                { assert gunzip_lines("${pair}/chains/${stem}.all.pre.chain.gz").any { line -> line.startsWith('chain ') } },
+                { assert gunzip_lines("${pair}/nets/${stem}.noClass.net.gz").any { line -> line.startsWith('net ') } },
+                { assert gunzip_lines("${pair}/axt/${stem}.net.axt.gz").any { line -> line.trim() } },
+                { assert gunzip_lines("${pair}/liftover/scer_smallToScer_small.over.chain.gz").any { line -> line.startsWith('chain ') } },
+                { assert snapshot(
+                    // pipeline versions.yml file from which Nextflow version is removed because we test pipelines on multiple Nextflow versions
+                    removeNextflowVersion("$outputDir/pipeline_info/wgpa_software_versions.yml"),
+                    // All stable path name, with a relative path
+                    stable_path,
+                    // All files with stable contents
+                    stable_content
+                ).match() }
+            )
+        }
+    }
+
+    test("reserved pair ids are rejected - stub") {
+
+        options "-stub"
+
+        when {
+            def samplesheet = new File("${launchDir}/samplesheet_reserved.csv")
+            samplesheet.text = [
+                'id,target,query,preset',
+                "genomes,${projectDir}/tests/data/yeast_small/scer_small.fa,${projectDir}/tests/data/yeast_small/seub_small.fa,near",
+                "Pipeline_Info,${projectDir}/tests/data/yeast_small/seub_small.fa,${projectDir}/tests/data/yeast_small/scer_small.fa,near",
+                "..,${projectDir}/tests/data/yeast_small/scer_small.fa,${projectDir}/tests/data/yeast_small/seub_small.fa,far",
+            ].join('\n') + '\n'
+            params {
+                input  = samplesheet.toString()
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            def log_text = (workflow.stdout + workflow.stderr).join('\n')
+            assertAll(
+                { assert workflow.failed },
+                { assert workflow.trace.tasks().size() == 0 },
+                { assert log_text.contains("Entry 1: Error for field 'id' (genomes)") },
+                { assert log_text.contains("Entry 2: Error for field 'id' (Pipeline_Info)") },
+                { assert log_text.contains("Entry 3: Error for field 'id' (..)") },
+                // Nothing is written next to --outdir
+                { assert !new File("${outputDir}/../alignment").exists() }
+            )
+        }
+    }
+
+    test("pair ids that differ only in case are rejected - stub") {
+
+        options "-stub"
+
+        when {
+            def samplesheet = new File("${launchDir}/samplesheet_case.csv")
+            samplesheet.text = [
+                'id,target,query,preset',
+                "pairA,${projectDir}/tests/data/yeast_small/scer_small.fa,${projectDir}/tests/data/yeast_small/seub_small.fa,near",
+                "paira,${projectDir}/tests/data/yeast_small/seub_small.fa,${projectDir}/tests/data/yeast_small/scer_small.fa,near",
+            ].join('\n') + '\n'
+            params {
+                input  = samplesheet.toString()
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            def log_text = (workflow.stdout + workflow.stderr).join('\n')
+            assertAll(
+                { assert workflow.failed },
+                { assert workflow.trace.tasks().size() == 0 },
+                { assert log_text.contains("pair ids must differ in more than case") },
+                { assert log_text.contains("pairA, paira") }
+            )
+        }
+    }
+}

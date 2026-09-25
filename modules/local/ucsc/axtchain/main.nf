@@ -8,7 +8,8 @@ process UCSC_AXTCHAIN {
         'quay.io/biocontainers/ucsc-axtchain:482--h0b57e2e_2' }"
 
     input:
-    tuple val(meta), path(psl), path(target_twobit), path(query_twobit)
+    // Target and query are staged in separate folders, so that a self-alignment (the same 2bit file twice) does not collide
+    tuple val(meta), path(psl), path(target_twobit, stageAs: 'target/*'), path(query_twobit, stageAs: 'query/*')
     path(score_scheme)
 
     output:

@@ -176,18 +176,31 @@ def createPairMeta(row, default_preset) {
 def validateInputSamplesheet(pairs) {
     // Output files (genomes/<name>.2bit, <target_name>_<query_name>.*) are named after the FASTA files,
     // so two different FASTA files must not share a name. The same file may appear in any number of pairs.
+    // Names are compared ignoring case: on a case-insensitive file system (the macOS default) 'Genome'
+    // and 'genome' would write to the same files.
     def files_by_name = [:]
     pairs.each { meta, target, query ->
-        files_by_name.get(meta.target_name, [] as Set) << target.toUriString()
-        files_by_name.get(meta.query_name, [] as Set) << query.toUriString()
+        files_by_name.get(meta.target_name.toLowerCase(), [] as Set) << target.toUriString()
+        files_by_name.get(meta.query_name.toLowerCase(), [] as Set) << query.toUriString()
         if (target.toUriString() == query.toUriString()) {
-            log.warn("Pair '${meta.id}' aligns ${target.name} to itself: the chains will contain the trivial self-alignment")
+            log.warn("Pair '${meta.id}' aligns ${target.name} to itself: the chains, nets and liftOver chains will contain the trivial self-alignment (the diagonal), which the pipeline does not remove")
         }
     }
     def clashes = files_by_name.findAll { _name, files -> files.size() > 1 }
     if (clashes) {
-        def details = clashes.collect { name, files -> "  ${name}: ${files.sort().join(', ')}" }.join('\n')
-        error("Please check input samplesheet -> different FASTA files give the same genome name, rename them so that each name is unique:\n${details}")
+        def details = clashes.collect { _name, files -> "  ${files.sort().join(', ')}" }.join('\n')
+        error("Please check input samplesheet -> different FASTA files give the same genome name (compared ignoring case), rename them so that each name is unique:\n${details}")
+    }
+
+    // Each pair writes to <outdir>/<id>/. The schema rejects duplicate ids; ids that differ only in case
+    // would share one folder on a case-insensitive file system.
+    def case_clashes = pairs
+        .collect { meta, _target, _query -> meta.id }
+        .groupBy { id -> id.toLowerCase() }
+        .findAll { _key, ids -> ids.size() > 1 }
+    if (case_clashes) {
+        def details = case_clashes.collect { _key, ids -> "  ${ids.join(', ')}" }.join('\n')
+        error("Please check input samplesheet -> pair ids must differ in more than case, because each pair writes to <outdir>/<id>/:\n${details}")
     }
 }
 

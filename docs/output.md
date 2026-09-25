@@ -64,7 +64,7 @@ Each distinct FASTA file gives one pair of files, however many pairs use it. The
 <summary>Output files</summary>
 
 - `<id>/alignment/`
-  - `<target>_<query>.maf.gz`: LAST alignments of the query to the target, in [MAF](https://genome.ucsc.edu/FAQ/FAQformat.html#format5) format. The header comments record the LAST version, the options and the scoring matrix.
+  - `<target>_<query>.maf.gz`: LAST alignments of the query to the target, in [MAF](https://genome.ucsc.edu/FAQ/FAQformat.html#format5) format. The header comments record the LAST version, the options, the name of the LAST index (the target genome name, as in v1.0.0) and the scoring matrix.
   - `<target>_<query>.psl.gz`: the same alignments in [PSL](https://genome.ucsc.edu/FAQ/FAQformat.html#format2) format (`maf-convert psl`), the input of axtChain.
   - `<target>_<query>.tsv`: alignment statistics from the nf-core LAST_LASTAL module (total alignment length, percent identity, and the number and total length of the target and query sequences).
 

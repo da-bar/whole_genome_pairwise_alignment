@@ -8,7 +8,8 @@
                     "last/lastal": {
                         "branch": "master",
                         "git_sha": "a37e7925c5dbd382ddd23a1b3b7d6326449b1aa2",
-                        "installed_by": ["modules"]
+                        "installed_by": ["modules"],
+                        "patch": "modules/nf-core/last/lastal/last-lastal.diff"
                     },
                     "last/lastdb": {
                         "branch": "master",

@@ -1,0 +1,29 @@
+Changes in component 'nf-core/last/lastal'
+'modules/nf-core/last/lastal/environment.yml' is unchanged
+'modules/nf-core/last/lastal/meta.yml' is unchanged
+Changes in 'last/lastal/main.nf':
+--- modules/nf-core/last/lastal/main.nf
++++ modules/nf-core/last/lastal/main.nf
+@@ -97,12 +97,16 @@
+         }'
+     }
+ 
++    # Link the index files into the task directory and give lastal the bare index name, so that the MAF
++    # header names the database as a lastal run next to its index does (e.g. '# S_cerevisiae', not '# lastdb/S_cerevisiae').
++    ln -s ${index}/* .
++
+     # The MAF files can be really big, so we stream them in the awk functions and gzip instead of reading them each time.
+     lastal \\
+         -P $task.cpus \\
+         $trained_params \\
+         $args \\
+-        ${index}/\$INDEX_NAME \\
++        \$INDEX_NAME \\
+         $fastx |
+         tee >(get_genome_stats > ${prefix}.genomestats.txt) |
+         tee >(gzip --no-name   > ${prefix}.maf.gz) |
+
+'modules/nf-core/last/lastal/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/last/lastal/tests/nextflow.config' is unchanged
+'modules/nf-core/last/lastal/tests/main.nf.test' is unchanged
+************************************************************

@@ -97,12 +97,16 @@ process LAST_LASTAL {
         }'
     }
 
+    # Link the index files into the task directory and give lastal the bare index name, so that the MAF
+    # header names the database as a lastal run next to its index does (e.g. '# S_cerevisiae', not '# lastdb/S_cerevisiae').
+    ln -s ${index}/* .
+
     # The MAF files can be really big, so we stream them in the awk functions and gzip instead of reading them each time.
     lastal \\
         -P $task.cpus \\
         $trained_params \\
         $args \\
-        ${index}/\$INDEX_NAME \\
+        \$INDEX_NAME \\
         $fastx |
         tee >(get_genome_stats > ${prefix}.genomestats.txt) |
         tee >(gzip --no-name   > ${prefix}.maf.gz) |

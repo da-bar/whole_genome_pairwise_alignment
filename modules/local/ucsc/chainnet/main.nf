@@ -8,7 +8,8 @@ process UCSC_CHAINNET {
         'quay.io/biocontainers/ucsc-chainnet:482--h0b57e2e_0' }"
 
     input:
-    tuple val(meta), path(chain), path(target_sizes), path(query_sizes)
+    // Target and query are staged in separate folders, so that a self-alignment (the same sizes file twice) does not collide
+    tuple val(meta), path(chain), path(target_sizes, stageAs: 'target/*'), path(query_sizes, stageAs: 'query/*')
 
     output:
     tuple val(meta), path("*.target.net.gz"), emit: target_net

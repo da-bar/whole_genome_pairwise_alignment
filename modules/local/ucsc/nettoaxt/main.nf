@@ -8,7 +8,8 @@ process UCSC_NETTOAXT {
         'quay.io/biocontainers/ucsc-nettoaxt:482--h0b57e2e_0' }"
 
     input:
-    tuple val(meta), path(net), path(chain), path(target_twobit), path(query_twobit)
+    // Target and query are staged in separate folders, so that a self-alignment (the same 2bit file twice) does not collide
+    tuple val(meta), path(net), path(chain), path(target_twobit, stageAs: 'target/*'), path(query_twobit, stageAs: 'query/*')
 
     output:
     tuple val(meta), path("*.axt.gz"), emit: axt

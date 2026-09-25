@@ -26,7 +26,7 @@ nextflow_pipeline {
         }
 
         then {
-            // v1.0.0 reference checksums: "<md5>  <file name>"; the maf entry is the md5 of the MAF body ('#' lines removed)
+            // v1.0.0 reference checksums: "<md5>  <file name>"; the maf.body entry is the md5 of the MAF without its '#' lines
             def v1 = [:]
             new File("${projectDir}/tests/data/yeast/v1.0.0_md5.txt").eachLine { line ->
                 if (line.trim() && !line.startsWith('#')) {
@@ -58,7 +58,8 @@ nextflow_pipeline {
             assert workflow.success
             assertAll(
                 // Parity with v1.0.0 (tests/data/yeast/v1.0.0_md5.txt), decompressing the gzipped v2 outputs
-                { assert v1.size() == 8 },
+                { assert v1.size() == 9 },
+                { assert gunzip_md5("${pair}/alignment/${stem}.maf.gz")                == v1["${stem}.maf"] },
                 { assert maf_body_md5("${pair}/alignment/${stem}.maf.gz")              == v1["${stem}.maf.body"] },
                 { assert gunzip_md5("${pair}/alignment/${stem}.psl.gz")                == v1["${stem}.psl"] },
                 { assert gunzip_md5("${pair}/chains/${stem}.all.chain.gz")             == v1["${stem}.all.chain"] },

@@ -75,7 +75,7 @@
                 "pipeline_info/wgpa_software_versions.yml"
             ],
             [
-                "S_cerevisiae_S_eubayanus.maf.gz:md5,e4f3599a2993d1724556fa6e30410685",
+                "S_cerevisiae_S_eubayanus.maf.gz:md5,5da52c1e1a06c0eaf49ee1846afeab72",
                 "S_cerevisiae_S_eubayanus.psl.gz:md5,5e0f56d2faf48330d1c4681d046defec",
                 "S_cerevisiae_S_eubayanus.tsv:md5,71b136f2b8503d897276f366ab667416",
                 "S_cerevisiae_S_eubayanus.net.axt.gz:md5,71aef8125bb2887171ecdd74823668c8",
@@ -92,7 +92,7 @@
                 "S_eubayanus.sizes:md5,5f648518def8828a5b0592cde59372a0"
             ]
         ],
-        "timestamp": "2026-09-25T10:57:18.514009",
+        "timestamp": "2026-09-25T11:58:36.455823",
         "meta": {
             "nf-test": "0.9.5",
             "nextflow": "26.04.6"

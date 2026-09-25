@@ -14,7 +14,7 @@
 
 **da-bar/wgpa** (whole-genome pairwise alignment) aligns whole genomes pair by pair and turns the alignments into the chains, nets and liftOver files used for comparative genomics. It takes a samplesheet of genome pairs (target and query FASTA files), aligns each query to its target with [LAST](https://gitlab.com/mcfrith/last), and then chains and nets the alignments with the [UCSC kent utilities](https://genome.ucsc.edu/goldenPath/help/chain.html), using the alignment presets of the Bioconductor package [CNEr](https://bioconductor.org/packages/CNEr/). Calling conserved non-coding elements (CNEs) will be added in a later release.
 
-Version 2 is a rewrite of [v1.0.0](https://github.com/da-bar/whole_genome_pairwise_alignment/tree/0280044394116c215d12f91ad8d257a77d72dc1e) on the [nf-core](https://nf-co.re/) template. v1.0.0 was a small Nextflow script that called the CNEr R wrappers for one genome pair. v2 runs the same programs with the same command lines, without R. On the v1.0.0 test pair (_Saccharomyces cerevisiae_ target, _S. eubayanus_ query), every file that v1.0.0 also made is byte-identical to the v1.0.0 file once it is decompressed, apart from one comment line in the MAF header (see [Relation to v1.0.0](#relation-to-v100)).
+Version 2 is a rewrite of [v1.0.0](https://github.com/da-bar/whole_genome_pairwise_alignment/tree/0280044394116c215d12f91ad8d257a77d72dc1e) on the [nf-core](https://nf-co.re/) template. v1.0.0 was a small Nextflow script that called the CNEr R wrappers for one genome pair. v2 runs the same programs with the same command lines, without R. On the v1.0.0 test pair (_Saccharomyces cerevisiae_ target, _S. eubayanus_ query), every file that v1.0.0 also made, the MAF included, is byte-identical to the v1.0.0 file once it is decompressed (see [Relation to v1.0.0](#relation-to-v100)).
 
 For each genome pair, the pipeline runs these steps:
 
@@ -39,14 +39,14 @@ scer_vs_seub,/path/to/S_cerevisiae.fa,/path/to/S_eubayanus.fa,near
 scer_vs_spar,/path/to/S_cerevisiae.fa,/path/to/S_paradoxus.fa.gz,
 ```
 
-| Column   | Description                                                                                                     |
-| -------- | --------------------------------------------------------------------------------------------------------------- |
-| `id`     | Unique name of the pair, without spaces or `/`. The outputs of the pair go to `<outdir>/<id>/`.                 |
-| `target` | Target (reference) genome FASTA: `.fa`, `.fasta` or `.fna`, optionally gzipped (`.gz`).                         |
-| `query`  | Query genome FASTA, same formats as `target`.                                                                   |
-| `preset` | Optional: `near`, `medium` or `far` (see [Presets](#presets)). An empty value uses `--preset` (default `near`). |
+| Column   | Description                                                                                                                     |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `id`     | Unique name of the pair (letters, digits, `.`, `_`, `-`; not `genomes` or `pipeline_info`). The outputs go to `<outdir>/<id>/`. |
+| `target` | Target (reference) genome FASTA: `.fa`, `.fasta` or `.fna`, optionally gzipped (`.gz`).                                         |
+| `query`  | Query genome FASTA, same formats as `target`.                                                                                   |
+| `preset` | Optional: `near`, `medium` or `far` (see [Presets](#presets)). An empty value uses `--preset` (default `near`).                 |
 
-A genome can be used in any number of pairs, and as the target of one pair and the query of another; its 2bit, sizes and LAST index files are made only once. The output files are named after the FASTA file names without the extension, as in v1.0.0 (`<target>_<query>.*`), so two different FASTA files must not have the same name.
+A genome can be used in any number of pairs, and as the target of one pair and the query of another; its 2bit, sizes and LAST index files are made only once. The output files are named after the FASTA file names without the extension, as in v1.0.0 (`<target>_<query>.*`), so two different FASTA files must not have the same name (compared ignoring case). A genome can also be aligned to itself; the pipeline then warns that the outputs contain the trivial self-alignment (see [usage](docs/usage.md#samplesheet-input)).
 
 Now, you can run the pipeline using:
 
@@ -98,7 +98,7 @@ netToAxt T_Q.noClass.net T_Q.all.pre.chain T.2bit Q.2bit unsorted.axt
 axtSort unsorted.axt T_Q.net.axt
 ```
 
-v2 runs the same commands. The pipeline test ([`tests/default.nf.test`](tests/default.nf.test), run with `nf-test` on the test profile) checks that the decompressed v2 outputs have the md5 sums of the v1.0.0 outputs in [`tests/data/yeast/v1.0.0_md5.txt`](tests/data/yeast/v1.0.0_md5.txt): the PSL, all.chain, all.pre.chain, noClass.net and net.axt files, both 2bit files, and the MAF alignment records. The only difference in the MAF is one header comment, which names the LAST database (`# lastdb/S_cerevisiae` instead of `# S_cerevisiae`). When v2 was written, the medium and far presets, and the pair with target and query swapped, were also checked against CNEr 1.46.0 run by hand, with the same result.
+v2 runs the same commands. The pipeline test ([`tests/default.nf.test`](tests/default.nf.test), run with `nf-test` on the test profile) checks that the decompressed v2 outputs have the md5 sums of the v1.0.0 outputs in [`tests/data/yeast/v1.0.0_md5.txt`](tests/data/yeast/v1.0.0_md5.txt): the PSL, all.chain, all.pre.chain, noClass.net and net.axt files, both 2bit files, and the MAF, both the whole file and its alignment records. For the MAF header to name the LAST database as v1.0.0 did (`# S_cerevisiae`, not `# lastdb/S_cerevisiae`), the nf-core `last/lastal` module is patched to call lastal with the bare index name ([`last-lastal.diff`](modules/nf-core/last/lastal/last-lastal.diff)). When v2 was written, the medium and far presets, and the pair with target and query swapped, were also checked against CNEr 1.46.0 run by hand, with the same result.
 
 What changed from v1.0.0:
 
@@ -108,7 +108,7 @@ What changed from v1.0.0:
 - The query net (`.query.net`), which v1.0.0 discarded, and the target net and axtChain chains, which v1.0.0 did not keep, are published.
 - Outputs are gzipped and sorted into subfolders (see [output](docs/output.md)); gzipped FASTA input is accepted.
 - No R: the tools run directly, each in its own conda environment or container.
-- `lastal` runs with one thread, as v1.0.0 did. With `lastal -P` > 1 the order of the alignments, and hence the chains, nets and axt files, can change from run to run (see [usage](docs/usage.md#lastal-threads-and-reproducibility)).
+- `lastdb` and `lastal` run with one thread, as v1.0.0 did. With `lastal -P` > 1 the order of the alignments, and hence the chains, nets and axt files, can change from run to run (see [usage](docs/usage.md#lastal-threads-and-reproducibility)); the pipeline warns if a custom config gives lastal more than one cpu.
 
 ## Credits
 

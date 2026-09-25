@@ -9,8 +9,8 @@
         "properties": {
             "id": {
                 "type": "string",
-                "pattern": "^[^\\s/]+$",
-                "errorMessage": "Pair id must be provided and cannot contain spaces or '/'",
+                "pattern": "^(?![Gg][Ee][Nn][Oo][Mm][Ee][Ss]$|[Pp][Ii][Pp][Ee][Ll][Ii][Nn][Ee]_[Ii][Nn][Ff][Oo]$)[A-Za-z0-9][A-Za-z0-9._-]*$",
+                "errorMessage": "Pair id must be provided, must start with a letter or digit and contain only letters, digits, '.', '_' and '-', and cannot be 'genomes' or 'pipeline_info' (in any case), which are output folders of the pipeline",
                 "meta": ["id"]
             },
             "target": {

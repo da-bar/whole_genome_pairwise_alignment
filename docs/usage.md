@@ -21,22 +21,23 @@ scer_vs_spar,/data/genomes/S_cerevisiae.fa,/data/genomes/S_paradoxus.fa.gz,
 seub_vs_scer,/data/genomes/S_eubayanus.fa,/data/genomes/S_cerevisiae.fa,near
 ```
 
-| Column   | Description                                                                                                                |
-| -------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `id`     | Unique name of the pair. It cannot contain spaces or `/`. The outputs of the pair are written to `<outdir>/<id>/`.         |
-| `target` | Target genome FASTA file, with the extension `.fa`, `.fasta` or `.fna`, optionally followed by `.gz`.                      |
-| `query`  | Query genome FASTA file, same formats as `target`.                                                                         |
-| `preset` | Optional. `near`, `medium` or `far` (see [Presets](#presets)). Leave it empty, or leave the column out, to use `--preset`. |
+| Column   | Description                                                                                                                   |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `id`     | Unique name of the pair (see the notes below for the allowed names). The outputs of the pair are written to `<outdir>/<id>/`. |
+| `target` | Target genome FASTA file, with the extension `.fa`, `.fasta` or `.fna`, optionally followed by `.gz`.                         |
+| `query`  | Query genome FASTA file, same formats as `target`.                                                                            |
+| `preset` | Optional. `near`, `medium` or `far` (see [Presets](#presets)). Leave it empty, or leave the column out, to use `--preset`.    |
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 
 Notes:
 
-- The genome name is the FASTA file name without `.fa`, `.fasta` or `.fna` (and `.gz`), as in v1.0.0. The output files of a pair are named `<target name>_<query name>.*`, and the 2bit and sizes files `<genome name>.2bit` and `.sizes`. Two different FASTA files with the same name (for example `/a/genome.fa` and `/b/genome.fa`) are therefore rejected; rename one of them.
+- Pair ids can contain letters, digits, `.`, `_` and `-`, and must start with a letter or digit. `genomes` and `pipeline_info` (in any case) are not allowed, because they are the pipeline's own output folders. Two ids must differ in more than case (`pairA` and `paira` are rejected), because on a case-insensitive file system, such as the macOS default, they would share one folder.
+- The genome name is the FASTA file name without `.fa`, `.fasta` or `.fna` (and `.gz`), as in v1.0.0. The output files of a pair are named `<target name>_<query name>.*`, and the 2bit and sizes files `<genome name>.2bit` and `.sizes`. Two different FASTA files with the same name (for example `/a/genome.fa` and `/b/genome.fa`), or with names that differ only in case (`genome.fa` and `Genome.fa`), are therefore rejected; rename one of them.
 - A FASTA file can appear in any number of rows, as target in one pair and as query in another. The pipeline makes its 2bit and sizes files once, and one LAST index per distinct target FASTA.
 - Lowercase (soft-masked) bases are kept in the 2bit files and are excluded from the initial LAST matches (`lastdb -c`), so soft-mask repeats before running the pipeline, as for v1.0.0.
 - The sequence names are the first word of each FASTA header.
-- Aligning a genome to itself (the same file as target and query) runs, but gives a warning: UCSC self-alignments need extra steps that the pipeline does not do.
+- A genome can be aligned to itself (the same file as target and query). The pipeline then prints a warning, because the chains, nets, axt files and liftOver chains contain the trivial alignment of each sequence to itself (the diagonal). The pipeline does not remove it; UCSC self-alignments need extra steps that the pipeline does not do.
 
 ## Presets
 
@@ -69,9 +70,9 @@ The nf-core LAST_LASTAL module runs `lastal -P <task.cpus>`. The pipeline sets `
 - With `-P` > 1, lastal writes the alignments of different query sequences in a different order in every run. The alignments themselves are the same: sorted, the MAF records of `-P 1` and `-P 4` are identical, and the alignments of each query sequence stay together and in the same order.
 - The chaining steps depend on that order. On the yeast test pair, a `-P 4` MAF gave the same set of chains as `-P 1`, but with different chain IDs and a different order of equal-scoring chains, and chainNet then picked different chains, so the nets and axt files differed too. Two `-P 4` runs also differed from each other.
 
-The number of threads for `lastdb` does not change the alignments: on the yeast pair, indexes made with 1, 2, 4 and 8 threads (whose `.suf` files differ) gave byte-identical MAF files.
+`lastdb` also runs with one thread (`cpus = 1` for LAST_LASTDB), as in v1.0.0. Indexes made with more threads have a different `.suf` file. On the yeast pair, indexes made with 1, 2, 4 and 8 threads gave byte-identical MAF files, but this has not been checked on whole vertebrate genomes, and indexing takes much less time than the alignment.
 
-If lastal is too slow for large genomes, you can raise its threads in a custom config, at the cost of reproducibility:
+If lastal is too slow for large genomes, you can raise its threads in a custom config, at the cost of reproducibility. The pipeline then prints a warning for each pair:
 
 ```groovy title="lastal_threads.config"
 process {
@@ -210,7 +211,17 @@ Specify the path to a specific config file (this is a core Nextflow command). Se
 
 ### Resource requests
 
-Whilst the default requirements set within the pipeline will hopefully work for most people and with most input data, you may find that you want to customise the compute resources that the pipeline requests. Each step in the pipeline has a default set of requirements for number of CPUs, memory and time. For most of the pipeline steps, if the job exits with any of the error codes specified [here](https://github.com/nf-core/rnaseq/blob/4c27ef5610c87db00c3c5a3eed10b1d161abf575/conf/base.config#L18) it will automatically be resubmitted with higher resources request (2 x original, then 3 x original). If it still fails after the third attempt then the pipeline execution is stopped.
+Whilst the default requirements set within the pipeline will hopefully work for most people and with most input data, you may find that you want to customise the compute resources that the pipeline requests. Each step in the pipeline has a default set of requirements for number of CPUs, memory and time. For most of the pipeline steps, if the job exits with one of the error codes listed in [`conf/base.config`](../conf/base.config) (`errorStrategy`: 130-145, 104 and 175-177, which include the codes for running out of memory or time), it is resubmitted once, with twice the original request (`maxRetries = 1`; the cpus of LAST_LASTDB, LAST_LASTAL and the single-threaded steps stay at 1). If it fails again, the pipeline execution is stopped.
+
+With the local executor, Nextflow does not start a task that asks for more cpus or memory than the machine has. The largest first requests are 6 cpus and 36 GB of memory (the `process_medium` label, e.g. UCSC_AXTCHAIN), doubled on a retry; LAST_LASTDB and LAST_LASTAL ask for 1 cpu and 36 GB. On a workstation, cap the requests at what the machine has, for example for 16 cores and 64 GB of memory:
+
+```groovy title="workstation.config"
+process {
+    resourceLimits = [ cpus: 16, memory: '60.GB' ]
+}
+```
+
+and add `-c workstation.config` to the command line. Requests above the limits are lowered to the limits.
 
 To change the resource requests, please see the [max resources](https://nf-co.re/docs/running/configuration/nextflow-for-your-system#set-max-resources) and [customise process resources](https://nf-co.re/docs/running/configuration/nextflow-for-your-system#customize-process-resources) section of the nf-core website.
 

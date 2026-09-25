@@ -1,5 +1,5 @@
 # md5 of v1.0.0 outputs on tests/data/yeast (S_cerevisiae target, S_eubayanus query), LAST 1652, kent 482, CNEr 1.46.0
-# maf: md5 of the MAF body with '#' header lines removed
+# maf: md5 of the whole MAF file; maf.body: md5 of the MAF body with '#' header lines removed
 5e0f56d2faf48330d1c4681d046defec  S_cerevisiae_S_eubayanus.psl
 ebb827db4acc69faf4ef820ed2eec8b8  S_cerevisiae_S_eubayanus.all.chain
 fbbdfc48856b21fae4f89c147c395154  S_cerevisiae_S_eubayanus.all.pre.chain
@@ -8,3 +8,4 @@ d62e508f7cce168869560c2d9e9a5474  S_cerevisiae_S_eubayanus.noClass.net
 a0f88a4539029dc53fa180699070e5d4  S_cerevisiae.2bit
 95db56c5ba96fe36dd8e24ec915e5c6a  S_eubayanus.2bit
 065d781f49ef0978993f604864b6cd3e  S_cerevisiae_S_eubayanus.maf.body
+5da52c1e1a06c0eaf49ee1846afeab72  S_cerevisiae_S_eubayanus.maf
