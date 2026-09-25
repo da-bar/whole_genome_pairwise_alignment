@@ -134,9 +134,18 @@ process {
 }
 ```
 
+## macOS and Linux
+
+The outputs are byte-identical to those of v1.0.0 on the same platform (checked on the yeast test pair on macOS arm64 and Linux x86_64, and on a pair of carp chromosomes on Linux x86_64). They are not byte-identical between macOS and Linux, for v1.0.0 as for v2: the 2bit, sizes, MAF and PSL files are the same, but `axtChain` output differs slightly, and so do the chains, nets, axt files and liftOver chains made from it.
+
+- On the yeast test pair, macOS arm64 and Linux x86_64 give the same chains, but chains of equal score come in a different order. The chain ids change with the order, and the nets pick a few different chains.
+- On a pair of carp chromosomes (about 24 Mb each), some chains also differ in content, by 0.0024% of the aligned bases.
+
+Linux x86_64 is the reference platform for production runs and for CI. Results made on macOS are just as valid, but compare them only with results made on macOS. The nf-test tests compare the platform-dependent files with references made on the same platform, `tests/data/<dataset>/platform/<platform>/` (see [`tests/data/README.md`](../tests/data/README.md)), and fail on a platform that has none. If the tools run in containers of another platform, for example `-profile docker` on macOS, set `WGPA_TEST_PLATFORM=linux-x86_64` for the tests.
+
 ## Test profiles
 
-- `-profile test` runs the v1.0.0 test pair: _S. cerevisiae_ (target) and _S. eubayanus_ (query), preset `near`. The FASTA files are downloaded from the v1.0.0 commit on GitHub; identical copies are in `tests/data/yeast/`. The outputs match the v1.0.0 checksums in `tests/data/yeast/v1.0.0_md5.txt`.
+- `-profile test` runs the v1.0.0 test pair: _S. cerevisiae_ (target) and _S. eubayanus_ (query), preset `near`. The FASTA files are downloaded from the v1.0.0 commit on GitHub; identical copies are in `tests/data/yeast/`. The outputs match the v1.0.0 checksums in `tests/data/yeast/v1.0.0_md5.txt` and, for the chain, net and axt files, in `tests/data/yeast/platform/<platform>/v1.0.0_md5.txt` (`darwin-arm64` or `linux-x86_64`, see [macOS and Linux](#macos-and-linux)).
 - `-profile test_full` runs the same pair with each preset, and the reverse pair (_S. eubayanus_ as target). It checks that genome files and LAST indexes are shared between pairs.
 
 The nf-test tests (`nf-test test`) use the copies in `tests/data/` and run offline.
