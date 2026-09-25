@@ -1,0 +1,178 @@
+nextflow_process {
+
+    name "Test Process CHECK_ALIGNMENT"
+    script "../main.nf"
+    process "CHECK_ALIGNMENT"
+    tag "modules"
+    tag "modules_local"
+    tag "check"
+    tag "check/alignment"
+
+    // Fixtures: tests/data/yeast_small. small.maf.gz and small.psl align seub_small (query) to scer_small (target).
+    // In nf-test, "${projectDir}" is the directory holding nf-test.config (the repository root).
+
+    test("yeast_small - maf.gz") {
+
+        when {
+            process {
+                """
+                input[0] = channel.of([
+                    [ id:'test', target_name:'scer_small', query_name:'seub_small' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/small.maf.gz", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/scer_small.sizes", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/seub_small.sizes", checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                // The alignment is passed on unchanged
+                { assert path(process.out.alignment[0][1]).md5 == path("${projectDir}/tests/data/yeast_small/small.maf.gz").md5 },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+
+    test("yeast_small - psl") {
+
+        when {
+            process {
+                """
+                input[0] = channel.of([
+                    [ id:'test', target_name:'scer_small', query_name:'seub_small' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/small.psl", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/scer_small.sizes", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/seub_small.sizes", checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert path(process.out.alignment[0][1]).md5 == path("${projectDir}/tests/data/yeast_small/small.psl").md5 },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+
+    test("yeast_small - psl - target and query swapped") {
+
+        when {
+            process {
+                """
+                input[0] = channel.of([
+                    [ id:'test', target_name:'seub_small', query_name:'scer_small' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/small.psl", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/seub_small.sizes", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/scer_small.sizes", checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            // The stderr of the failed task: the part of the error report between 'Command error:' and 'Work dir:'
+            // (the report also shows the command, which contains the message templates)
+            def report = (process.errorReport ?: '').tokenize('\n').dropWhile { line -> !line.contains('Command error:') }.takeWhile { line -> !line.contains('Work dir:') }.join('\n')
+            assertAll(
+                { assert process.failed },
+                { assert report.contains("ERROR: Pair 'test': the sequences of its alignment (samplesheet column 'alignment') are not those of its target and query FASTA files.") },
+                { assert report.contains("2 of the 2 target sequences of the alignment are not in the target FASTA (seub_small), e.g. BK006935.2, BK006936.2") },
+                { assert report.contains("3 of the 3 query sequences of the alignment are not in the query FASTA (scer_small), e.g. CM003582.1, CM003583.1, CM003584.1") },
+                { assert report.contains("Target and query look swapped") }
+            )
+        }
+    }
+
+    test("yeast_small - maf.gz - wrong query genome") {
+
+        // The query genome is given as scer_small (the target genome) instead of seub_small
+
+        when {
+            process {
+                """
+                input[0] = channel.of([
+                    [ id:'test', target_name:'scer_small', query_name:'scer_small' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/small.maf.gz", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/scer_small.sizes", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/scer_small.sizes", checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            // The stderr of the failed task: the part of the error report between 'Command error:' and 'Work dir:'
+            // (the report also shows the command, which contains the message templates)
+            def report = (process.errorReport ?: '').tokenize('\n').dropWhile { line -> !line.contains('Command error:') }.takeWhile { line -> !line.contains('Work dir:') }.join('\n')
+            assertAll(
+                { assert process.failed },
+                { assert report.contains("3 of the 3 query sequences of the alignment are not in the query FASTA (scer_small), e.g. CM003582.1, CM003583.1, CM003584.1") },
+                { assert !report.contains("target sequences of the alignment") },
+                { assert !report.contains("look swapped") },
+                { assert report.contains("Check that the alignment was made from these two FASTA files") }
+            )
+        }
+    }
+
+    test("yeast_small - psl - other sequence length") {
+
+        // The same sequence names, but BK006936.2 is one base longer in the target sizes file (another assembly version)
+
+        when {
+            def sizes = new File("${launchDir}/scer_small_v2.sizes")
+            sizes.text = new File("${projectDir}/tests/data/yeast_small/scer_small.sizes").text.replace('BK006936.2\t813184', 'BK006936.2\t813185')
+            process {
+                """
+                input[0] = channel.of([
+                    [ id:'test', target_name:'scer_small_v2', query_name:'seub_small' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/small.psl", checkIfExists: true),
+                    file("${sizes}", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/seub_small.sizes", checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            // The stderr of the failed task: the part of the error report between 'Command error:' and 'Work dir:'
+            // (the report also shows the command, which contains the message templates)
+            def report = (process.errorReport ?: '').tokenize('\n').dropWhile { line -> !line.contains('Command error:') }.takeWhile { line -> !line.contains('Work dir:') }.join('\n')
+            assertAll(
+                { assert process.failed },
+                { assert report.contains("1 of the 2 target sequences of the alignment have another length in the target FASTA (scer_small_v2), e.g. BK006936.2 (813184 in the alignment, 813185 in the FASTA)") },
+                { assert !report.contains("query sequences of the alignment") }
+            )
+        }
+    }
+
+    test("yeast_small - maf.gz - stub") {
+
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = channel.of([
+                    [ id:'test', target_name:'scer_small', query_name:'seub_small' ], // meta map
+                    file("${projectDir}/tests/data/yeast_small/small.maf.gz", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/scer_small.sizes", checkIfExists: true),
+                    file("${projectDir}/tests/data/yeast_small/seub_small.sizes", checkIfExists: true)
+                ])
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() }
+            )
+        }
+    }
+}

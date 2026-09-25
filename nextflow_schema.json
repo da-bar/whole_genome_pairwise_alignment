@@ -20,7 +20,7 @@
                     "mimetype": "text/csv",
                     "pattern": "^\\S+\\.csv$",
                     "description": "Path to comma-separated file listing the genome pairs to align.",
-                    "help_text": "A CSV file with a header row and one row per genome pair, with the columns `id` (unique pair id), `target` (target genome FASTA), `query` (query genome FASTA) and, optionally, `preset` (`near`, `medium` or `far`; empty rows use `--preset`). See the usage docs.",
+                    "help_text": "A CSV file with a header row and one row per genome pair, with the columns `id` (unique pair id), `target` (target genome FASTA), `query` (query genome FASTA) and, optionally, `preset` (`near`, `medium` or `far`; empty rows use `--preset`) and `alignment` (a precomputed MAF or PSL alignment of the query to the target, optionally gzipped, e.g. the `*.m2m.maf.gz` of nf-core/pairgenomealign; the pair then skips LAST, but still needs both FASTA files, and its preset still sets the axtChain options and score scheme). See the usage docs.",
                     "fa_icon": "fas fa-file-csv"
                 },
                 "outdir": {

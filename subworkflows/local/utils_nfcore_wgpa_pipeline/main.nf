@@ -87,8 +87,9 @@ workflow PIPELINE_INITIALISATION {
     // Create channel from input file provided through params.input
     //
 
-    // One row per genome pair: [ meta, target_fasta, query_fasta ] with
-    // meta = [ id, preset, target_name, query_name ]
+    // One row per genome pair: [ meta, target_fasta, query_fasta, alignment ] with
+    // meta = [ id, preset, target_name, query_name ], plus alignment_format ('maf' or 'psl') for a pair
+    // with an alignment input; alignment = [] for a pair that the pipeline aligns with LAST
     def pairs = samplesheetToList(input, "${projectDir}/assets/schema_input.json")
         .collect { row -> createPairMeta(row, preset) }
     validateInputSamplesheet(pairs)
@@ -157,17 +158,22 @@ def genomeName(fasta) {
 }
 
 //
-// Build the pair meta map from a samplesheet row
+// Build the pair meta map from a samplesheet row. Only a pair with an alignment input gets the key
+// alignment_format, so that the meta map (and hence the task hashes) of the other pairs is as before.
 //
 def createPairMeta(row, default_preset) {
-    def (meta, target, query) = row
+    def (meta, target, query, alignment) = row
     def pair_meta = [
         id          : meta.id,
         preset      : meta.preset ?: default_preset,
         target_name : genomeName(target),
         query_name  : genomeName(query),
     ]
-    return [ pair_meta, target, query ]
+    if (alignment instanceof Path) {
+        pair_meta.alignment_format = alignment.name ==~ /.*\.maf(\.gz)?/ ? 'maf' : 'psl'
+        return [ pair_meta, target, query, alignment ]
+    }
+    return [ pair_meta, target, query, [] ]
 }
 
 //
@@ -179,7 +185,7 @@ def validateInputSamplesheet(pairs) {
     // Names are compared ignoring case: on a case-insensitive file system (the macOS default) 'Genome'
     // and 'genome' would write to the same files.
     def files_by_name = [:]
-    pairs.each { meta, target, query ->
+    pairs.each { meta, target, query, _alignment ->
         files_by_name.get(meta.target_name.toLowerCase(), [] as Set) << target.toUriString()
         files_by_name.get(meta.query_name.toLowerCase(), [] as Set) << query.toUriString()
         if (target.toUriString() == query.toUriString()) {
@@ -195,7 +201,7 @@ def validateInputSamplesheet(pairs) {
     // Each pair writes to <outdir>/<id>/. The schema rejects duplicate ids; ids that differ only in case
     // would share one folder on a case-insensitive file system.
     def case_clashes = pairs
-        .collect { meta, _target, _query -> meta.id }
+        .collect { meta, _target, _query, _alignment -> meta.id }
         .groupBy { id -> id.toLowerCase() }
         .findAll { _key, ids -> ids.size() > 1 }
     if (case_clashes) {

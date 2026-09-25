@@ -1,0 +1,86 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "check_alignment"
+description: |
+  Check that the sequences of a pairwise alignment (MAF or PSL, plain or gzipped) are those of the
+  target and query genomes: every target and query sequence name of the alignment must be in the
+  genome's sizes file, with the same length. Fails with a message that lists the sequences that do not
+  match, and says when target and query look swapped. The alignment is passed through unchanged.
+keywords:
+  - alignment
+  - maf
+  - psl
+  - validation
+  - sequence names
+tools:
+  - gawk:
+      description: "GNU awk"
+      homepage: "https://www.gnu.org/software/gawk/"
+      documentation: "https://www.gnu.org/software/gawk/manual/"
+      tool_dev_url: "https://git.savannah.gnu.org/cgit/gawk.git"
+      licence: ["GPL v3"]
+      identifier: ""
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing pair information
+          e.g. `[ id:'pair', target_name:'genomeA', query_name:'genomeB' ]`
+    - alignment:
+        type: file
+        description: |
+          Pairwise alignment of the query to the target: MAF (the target is the first sequence of each
+          block, the query the second) or PSL (target in columns 14-15, query in columns 10-11, an optional
+          5-line psLayout header), plain or gzipped. MAF is recognised by the extension .maf or .maf.gz.
+        pattern: "*.{maf,psl}{,.gz}"
+        ontologies:
+          - edam: http://edamontology.org/format_3008 # MAF
+    - target_sizes:
+        type: file
+        description: Sequence sizes of the target genome ("name<TAB>length", from twoBitInfo)
+        pattern: "*.sizes"
+        ontologies:
+          - edam: http://edamontology.org/format_3475 # TSV
+    - query_sizes:
+        type: file
+        description: Sequence sizes of the query genome ("name<TAB>length", from twoBitInfo)
+        pattern: "*.sizes"
+        ontologies:
+          - edam: http://edamontology.org/format_3475 # TSV
+output:
+  alignment:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing pair information
+            e.g. `[ id:'pair', target_name:'genomeA', query_name:'genomeB' ]`
+      - alignment:
+          type: file
+          description: The input alignment, unchanged
+          pattern: "*.{maf,psl}{,.gz}"
+          ontologies:
+            - edam: http://edamontology.org/format_3008 # MAF
+  versions_gawk:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - gawk:
+          type: string
+          description: The name of the tool
+      - "awk -Wversion | sed '1!d; s/.*Awk //; s/,.*//'":
+          type: eval
+          description: The expression to obtain the version of the tool
+topics:
+  versions:
+    - - ${task.process}:
+          type: string
+          description: The name of the process
+      - gawk:
+          type: string
+          description: The name of the tool
+      - "awk -Wversion | sed '1!d; s/.*Awk //; s/,.*//'":
+          type: eval
+          description: The expression to obtain the version of the tool
+authors:
+  - "@da-bar"
+maintainers:
+  - "@da-bar"

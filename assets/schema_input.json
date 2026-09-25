@@ -2,7 +2,7 @@
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://raw.githubusercontent.com/da-bar/wgpa/master/assets/schema_input.json",
     "title": "da-bar/wgpa pipeline - params.input schema",
-    "description": "Schema for the file provided with params.input: one row per genome pair (target and query FASTA)",
+    "description": "Schema for the file provided with params.input: one row per genome pair (target and query FASTA, optionally a precomputed alignment)",
     "type": "array",
     "items": {
         "type": "object",
@@ -32,6 +32,13 @@
                 "enum": ["near", "medium", "far"],
                 "errorMessage": "Preset must be one of 'near', 'medium' or 'far', or left empty to use --preset",
                 "meta": ["preset"]
+            },
+            "alignment": {
+                "type": "string",
+                "format": "file-path",
+                "exists": true,
+                "pattern": "^\\S+\\.(maf|psl)(\\.gz)?$",
+                "errorMessage": "Alignment must be a MAF or PSL file of the query aligned to the target, with extension '.maf' or '.psl', optionally followed by '.gz', and cannot contain spaces; leave it empty to align the pair with LAST"
             }
         },
         "required": ["id", "target", "query"]

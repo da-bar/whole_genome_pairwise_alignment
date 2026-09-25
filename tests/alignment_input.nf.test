@@ -1,0 +1,306 @@
+nextflow_pipeline {
+
+    name "Test pipeline with alignment inputs"
+    script "../main.nf"
+    tag "pipeline"
+    tag "alignment_input"
+
+    // Pairs with a precomputed alignment (samplesheet column alignment), on the small yeast fixtures in
+    // tests/data/yeast_small (target scer_small, query seub_small, preset near).
+    //
+    // small.maf.gz is the v1.0.0 alignment of the pair, made with the v1.0.0 (CNEr near) commands:
+    //     lastdb -c scer_small scer_small.fa
+    //     lastal -a 600 -b 150 -e 3000 -p assets/matrices/near.lastal.mat -s 2 -f 1 scer_small seub_small.fa
+    // (LAST 1652), gzipped with gzip -n. Its header names the database 'scer_small', as the pipeline's patched
+    // LAST_LASTAL writes it. 'maf-convert psl' of it gives small.psl, so a pair that starts from it, or from
+    // small.psl, must give every other yeast_small fixture byte for byte.
+    // Each test writes its samplesheet to its own launch directory.
+
+    test("alignment input - MAF - yeast_small") {
+
+        when {
+            def samplesheet = new File("${launchDir}/samplesheet_maf.csv")
+            samplesheet.text = [
+                'id,target,query,preset,alignment',
+                "scer_seub_maf,${projectDir}/tests/data/yeast_small/scer_small.fa,${projectDir}/tests/data/yeast_small/seub_small.fa,near,${projectDir}/tests/data/yeast_small/small.maf.gz",
+            ].join('\n') + '\n'
+            params {
+                input  = samplesheet.toString()
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            def fixtures = "${projectDir}/tests/data/yeast_small"
+            def pair = "${params.outdir}/scer_seub_maf"
+            def stem = 'scer_small_seub_small'
+            def gunzip_md5 = { f ->
+                new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { gz -> gz.bytes.md5() }
+            }
+            def tasks = workflow.trace.tasks().collect { task -> task.name }
+            // stable_path: All files + folders in ${params.outdir}/ with a stable path (including file name)
+            def stable_path = getAllFilesFromDir(params.outdir, relative: true, includeDir: true, ignore: ['pipeline_info/*.{html,json,txt}'])
+            // stable_content: All files in ${params.outdir}/ with stable content
+            def stable_content = getAllFilesFromDir(params.outdir, ignoreFile: 'tests/.nftignore')
+            assert workflow.success
+            assertAll(
+                // No LAST index or lastal for a pair with an alignment input; its MAF is checked and converted to PSL
+                { assert !tasks.any { name -> name.contains(':LAST_LASTDB') || name.contains(':LAST_LASTAL') } },
+                { assert tasks.count { name -> name.contains(':CHECK_ALIGNMENT') } == 1 },
+                { assert tasks.count { name -> name.contains(':LAST_MAFCONVERT') } == 1 },
+                // Only the PSL is published in alignment/ (the MAF is the user's input)
+                { assert new File("${pair}/alignment").list().sort() == [ "${stem}.psl.gz" ] },
+                // Parity with the yeast_small fixtures (v1.0.0 commands), after decompression
+                { assert path("${params.outdir}/genomes/scer_small.2bit").md5            == path("${fixtures}/scer_small.2bit").md5 },
+                { assert path("${params.outdir}/genomes/seub_small.2bit").md5            == path("${fixtures}/seub_small.2bit").md5 },
+                { assert path("${params.outdir}/genomes/scer_small.sizes").md5           == path("${fixtures}/scer_small.sizes").md5 },
+                { assert path("${params.outdir}/genomes/seub_small.sizes").md5           == path("${fixtures}/seub_small.sizes").md5 },
+                { assert gunzip_md5("${pair}/alignment/${stem}.psl.gz")                  == path("${fixtures}/small.psl").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.chain.gz")                   == path("${fixtures}/small.chain").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.all.chain.gz")               == path("${fixtures}/small.all.chain").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.all.pre.chain.gz")           == path("${fixtures}/small.all.pre.chain").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.target.net.gz")                == path("${fixtures}/small.target.net").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.query.net.gz")                 == path("${fixtures}/small.query.net").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.noClass.net.gz")               == path("${fixtures}/small.noClass.net").md5 },
+                { assert gunzip_md5("${pair}/axt/${stem}.net.axt.gz")                    == path("${fixtures}/small.net.axt").md5 },
+                { assert gunzip_md5("${pair}/liftover/scer_smallToSeub_small.over.chain.gz") == path("${fixtures}/small.over.chain").md5 },
+                { assert snapshot(
+                    // pipeline versions.yml file from which Nextflow version is removed because we test pipelines on multiple Nextflow versions
+                    removeNextflowVersion("$outputDir/pipeline_info/wgpa_software_versions.yml"),
+                    // All stable path name, with a relative path
+                    stable_path,
+                    // All files with stable contents
+                    stable_content
+                ).match() }
+            )
+        }
+    }
+
+    test("alignment input - PSL - yeast_small") {
+
+        when {
+            def samplesheet = new File("${launchDir}/samplesheet_psl.csv")
+            samplesheet.text = [
+                'id,target,query,preset,alignment',
+                "scer_seub_psl,${projectDir}/tests/data/yeast_small/scer_small.fa,${projectDir}/tests/data/yeast_small/seub_small.fa,near,${projectDir}/tests/data/yeast_small/small.psl",
+            ].join('\n') + '\n'
+            params {
+                input  = samplesheet.toString()
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            def fixtures = "${projectDir}/tests/data/yeast_small"
+            def pair = "${params.outdir}/scer_seub_psl"
+            def stem = 'scer_small_seub_small'
+            def gunzip_md5 = { f ->
+                new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { gz -> gz.bytes.md5() }
+            }
+            def tasks = workflow.trace.tasks().collect { task -> task.name }
+            def stable_path = getAllFilesFromDir(params.outdir, relative: true, includeDir: true, ignore: ['pipeline_info/*.{html,json,txt}'])
+            def stable_content = getAllFilesFromDir(params.outdir, ignoreFile: 'tests/.nftignore')
+            assert workflow.success
+            assertAll(
+                // A PSL input is checked and goes straight to the chaining: no LAST step at all
+                { assert !tasks.any { name -> name.contains(':LAST_') } },
+                { assert tasks.count { name -> name.contains(':CHECK_ALIGNMENT') } == 1 },
+                { assert !new File("${pair}/alignment").exists() },
+                // Parity with the yeast_small fixtures (v1.0.0 commands), after decompression
+                { assert gunzip_md5("${pair}/chains/${stem}.chain.gz")                   == path("${fixtures}/small.chain").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.all.chain.gz")               == path("${fixtures}/small.all.chain").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.all.pre.chain.gz")           == path("${fixtures}/small.all.pre.chain").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.target.net.gz")                == path("${fixtures}/small.target.net").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.query.net.gz")                 == path("${fixtures}/small.query.net").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.noClass.net.gz")               == path("${fixtures}/small.noClass.net").md5 },
+                { assert gunzip_md5("${pair}/axt/${stem}.net.axt.gz")                    == path("${fixtures}/small.net.axt").md5 },
+                { assert gunzip_md5("${pair}/liftover/scer_smallToSeub_small.over.chain.gz") == path("${fixtures}/small.over.chain").md5 },
+                { assert snapshot(
+                    removeNextflowVersion("$outputDir/pipeline_info/wgpa_software_versions.yml"),
+                    stable_path,
+                    stable_content
+                ).match() }
+            )
+        }
+    }
+
+    test("alignment input - MAF with the target on the - strand - yeast_small") {
+
+        // With a LAST index of both strands (lastdb -S2, e.g. nf-core/pairgenomealign --strand both), lastal
+        // writes the query on the + strand and the target on either strand. Make that form of small.maf.gz:
+        // every block with the query on the - strand is reverse-complemented, so that its target row is on the
+        // - strand. 'maf-convert psl' must give the same PSL (small.psl), and hence the same chains and nets.
+
+        when {
+            def complement = [ A:'T', C:'G', G:'C', T:'A', R:'Y', Y:'R', K:'M', M:'K', S:'S', W:'W', B:'V', V:'B', D:'H', H:'D', N:'N', '-':'-' ]
+            def revcomp = { String seq ->
+                seq.reverse().collect { base -> def c = complement[base.toUpperCase()]; base == base.toUpperCase() ? c : c.toLowerCase() }.join()
+            }
+            def maf = new File("${launchDir}/small.minus_target.maf")
+            def text = new StringBuilder()
+            def block = []
+            def flush = {
+                if (block) {
+                    def flip = block.findAll { line -> line.startsWith('s ') }[1].split(/\s+/)[4] == '-'
+                    block.each { line ->
+                        if (flip && line.startsWith('s ')) {
+                            def (_s, name, start, size, strand, seq_size, seq) = line.split(/\s+/).toList()
+                            text << "s ${name} ${seq_size.toLong() - start.toLong() - size.toLong()} ${size} ${strand == '+' ? '-' : '+'} ${seq_size} ${revcomp(seq)}\n"
+                        } else {
+                            text << line << '\n'
+                        }
+                    }
+                    text << '\n'
+                    block.clear()
+                }
+            }
+            new java.util.zip.GZIPInputStream(new FileInputStream("${projectDir}/tests/data/yeast_small/small.maf.gz")).withReader('UTF-8') { reader ->
+                reader.eachLine { line ->
+                    if (line.startsWith('#')) {
+                        text << line << '\n'
+                    } else if (line.trim()) {
+                        block << line
+                    } else {
+                        flush()
+                    }
+                }
+            }
+            flush()
+            maf.text = text.toString()
+
+            def samplesheet = new File("${launchDir}/samplesheet_minus.csv")
+            samplesheet.text = [
+                'id,target,query,preset,alignment',
+                "scer_seub_minus,${projectDir}/tests/data/yeast_small/scer_small.fa,${projectDir}/tests/data/yeast_small/seub_small.fa,near,${maf}",
+            ].join('\n') + '\n'
+            params {
+                input  = samplesheet.toString()
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            def fixtures = "${projectDir}/tests/data/yeast_small"
+            def pair = "${params.outdir}/scer_seub_minus"
+            def stem = 'scer_small_seub_small'
+            def gunzip_md5 = { f ->
+                new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { gz -> gz.bytes.md5() }
+            }
+            // Target (first) rows on the - strand in the MAF input
+            def minus_target_blocks = 0
+            def row = 0
+            new File("${launchDir}/small.minus_target.maf").eachLine { line ->
+                if (line.startsWith('a')) { row = 0 }
+                if (line.startsWith('s ')) {
+                    row++
+                    if (row == 1 && line.split(/\s+/)[4] == '-') { minus_target_blocks++ }
+                }
+            }
+            assert workflow.success
+            assertAll(
+                { assert minus_target_blocks == 76 },
+                { assert gunzip_md5("${pair}/alignment/${stem}.psl.gz")                  == path("${fixtures}/small.psl").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.chain.gz")                   == path("${fixtures}/small.chain").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.all.chain.gz")               == path("${fixtures}/small.all.chain").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.all.pre.chain.gz")           == path("${fixtures}/small.all.pre.chain").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.target.net.gz")                == path("${fixtures}/small.target.net").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.query.net.gz")                 == path("${fixtures}/small.query.net").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.noClass.net.gz")               == path("${fixtures}/small.noClass.net").md5 },
+                { assert gunzip_md5("${pair}/axt/${stem}.net.axt.gz")                    == path("${fixtures}/small.net.axt").md5 },
+                { assert gunzip_md5("${pair}/liftover/scer_smallToSeub_small.over.chain.gz") == path("${fixtures}/small.over.chain").md5 }
+            )
+        }
+    }
+
+    test("alignment input - target and query swapped - fails") {
+
+        // small.maf.gz has scer_small as its target; the samplesheet has the genomes the other way round
+
+        when {
+            def samplesheet = new File("${launchDir}/samplesheet_swapped.csv")
+            samplesheet.text = [
+                'id,target,query,preset,alignment',
+                "seub_scer_swapped,${projectDir}/tests/data/yeast_small/seub_small.fa,${projectDir}/tests/data/yeast_small/scer_small.fa,near,${projectDir}/tests/data/yeast_small/small.maf.gz",
+            ].join('\n') + '\n'
+            params {
+                input  = samplesheet.toString()
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            def tasks = workflow.trace.tasks().collect { task -> task.name }
+            // The stderr of the failed task: the part of the Nextflow error report (stdout) between 'Command error:'
+            // and 'Work dir:' (the report also shows the command, which contains the message templates)
+            def report = workflow.stdout.dropWhile { line -> !line.contains('Command error:') }.takeWhile { line -> !line.contains('Work dir:') }.join('\n')
+            assertAll(
+                { assert workflow.failed },
+                { assert tasks.count { name -> name.contains(':CHECK_ALIGNMENT') } == 1 },
+                { assert report.contains("ERROR: Pair 'seub_scer_swapped': the sequences of its alignment (samplesheet column 'alignment') are not those of its target and query FASTA files.") },
+                { assert report.contains("2 of the 2 target sequences of the alignment are not in the target FASTA (seub_small), e.g. BK006935.2, BK006936.2") },
+                { assert report.contains("3 of the 3 query sequences of the alignment are not in the query FASTA (scer_small), e.g. CM003582.1, CM003583.1, CM003584.1") },
+                { assert report.contains("Target and query look swapped") },
+                // The pipeline stops before the MAF conversion and the chaining
+                { assert !tasks.any { name -> name.contains(':LAST_') || name.contains(':CHAIN_NET:') } },
+                { assert !new File("${params.outdir}/seub_scer_swapped").exists() }
+            )
+        }
+    }
+
+    test("mixed samplesheet - one pair aligned with LAST, one with a MAF input - yeast_small") {
+
+        // seub_scer_lastal is aligned by the pipeline (target seub_small); scer_seub_maf starts from small.maf.gz
+        // (target scer_small). Only seub_small needs a LAST index. Both genomes are prepared once.
+
+        when {
+            def samplesheet = new File("${launchDir}/samplesheet_mixed.csv")
+            samplesheet.text = [
+                'id,target,query,preset,alignment',
+                "seub_scer_lastal,${projectDir}/tests/data/yeast_small/seub_small.fa,${projectDir}/tests/data/yeast_small/scer_small.fa,near,",
+                "scer_seub_maf,${projectDir}/tests/data/yeast_small/scer_small.fa,${projectDir}/tests/data/yeast_small/seub_small.fa,near,${projectDir}/tests/data/yeast_small/small.maf.gz",
+            ].join('\n') + '\n'
+            params {
+                input  = samplesheet.toString()
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            def fixtures = "${projectDir}/tests/data/yeast_small"
+            def pair = "${params.outdir}/scer_seub_maf"
+            def stem = 'scer_small_seub_small'
+            def gunzip_md5 = { f ->
+                new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { gz -> gz.bytes.md5() }
+            }
+            def tasks = workflow.trace.tasks().collect { task -> task.name }
+            def stable_path = getAllFilesFromDir(params.outdir, relative: true, includeDir: true, ignore: ['pipeline_info/*.{html,json,txt}'])
+            def stable_content = getAllFilesFromDir(params.outdir, ignoreFile: 'tests/.nftignore')
+            assert workflow.success
+            assertAll(
+                // One LAST index, for the target of the pair aligned with LAST only
+                { assert tasks.findAll { name -> name.contains(':LAST_LASTDB') } == [ 'DABAR_WGPA:WGPA:PAIRWISE_ALIGN:LAST_LASTDB (seub_small)' ] },
+                { assert tasks.findAll { name -> name.contains(':LAST_LASTAL') } == [ 'DABAR_WGPA:WGPA:PAIRWISE_ALIGN:LAST_LASTAL (seub_scer_lastal)' ] },
+                { assert tasks.findAll { name -> name.contains(':CHECK_ALIGNMENT') } == [ 'DABAR_WGPA:WGPA:PAIRWISE_ALIGN:CHECK_ALIGNMENT (scer_seub_maf)' ] },
+                { assert tasks.count { name -> name.contains(':LAST_MAFCONVERT') } == 2 },
+                // Each genome prepared once
+                { assert tasks.count { name -> name.contains(':UCSC_FATOTWOBIT') } == 2 },
+                { assert new File("${params.outdir}/genomes").list().sort() == [ 'scer_small.2bit', 'scer_small.sizes', 'seub_small.2bit', 'seub_small.sizes' ] },
+                // The pair aligned with LAST keeps its MAF and statistics; the pair with the MAF input only gets the PSL
+                { assert new File("${params.outdir}/seub_scer_lastal/alignment").list().sort() == [ 'seub_small_scer_small.maf.gz', 'seub_small_scer_small.psl.gz', 'seub_small_scer_small.tsv' ] },
+                { assert new File("${pair}/alignment").list().sort() == [ "${stem}.psl.gz" ] },
+                // The pair with the MAF input gives the yeast_small fixtures
+                { assert gunzip_md5("${pair}/alignment/${stem}.psl.gz")                  == path("${fixtures}/small.psl").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.all.chain.gz")               == path("${fixtures}/small.all.chain").md5 },
+                { assert gunzip_md5("${pair}/chains/${stem}.all.pre.chain.gz")           == path("${fixtures}/small.all.pre.chain").md5 },
+                { assert gunzip_md5("${pair}/nets/${stem}.noClass.net.gz")               == path("${fixtures}/small.noClass.net").md5 },
+                { assert gunzip_md5("${pair}/axt/${stem}.net.axt.gz")                    == path("${fixtures}/small.net.axt").md5 },
+                { assert gunzip_md5("${pair}/liftover/scer_smallToSeub_small.over.chain.gz") == path("${fixtures}/small.over.chain").md5 },
+                { assert snapshot(
+                    removeNextflowVersion("$outputDir/pipeline_info/wgpa_software_versions.yml"),
+                    stable_path,
+                    stable_content
+                ).match() }
+            )
+        }
+    }
+}

@@ -1,18 +1,33 @@
 //
-// Align each query genome to its target genome with LAST and convert the alignments to PSL
+// Align each query genome to its target genome with LAST and convert the alignments to PSL. A pair with an
+// alignment in the samplesheet (column alignment: MAF or PSL, optionally gzipped) skips LAST: its alignment
+// is checked against the pair's genomes, and a MAF is converted to PSL.
 //
 
 include { LAST_LASTDB     } from '../../../modules/nf-core/last/lastdb'
 include { LAST_LASTAL     } from '../../../modules/nf-core/last/lastal'
 include { LAST_MAFCONVERT } from '../../../modules/nf-core/last/mafconvert'
+include { CHECK_ALIGNMENT } from '../../../modules/local/check/alignment'
 
 workflow PAIRWISE_ALIGN {
 
     take:
-    ch_pairs         // channel: [ val(meta), path(target_fasta), path(query_fasta) ]
+    ch_samplesheet   // channel: [ val(meta), path(target_fasta), path(query_fasta), path(alignment) ], alignment = [] if not given; meta.alignment_format = 'maf' or 'psl' if given
     ch_lastal_matrix // channel: [ val(meta), path(lastal_matrix) ], the preset's scoring matrix for lastal -p
+    ch_sizes         // channel: [ val(meta), path(target_sizes), path(query_sizes) ], the sizes files of each pair's genomes
 
     main:
+
+    //
+    // Pairs with an alignment input skip LAST: they need neither a LAST index nor lastal
+    //
+    def ch_input = ch_samplesheet
+        .branch { meta, _target, _query, _alignment ->
+            alignment: meta.alignment_format != null
+            lastal: true
+        }
+    def ch_pairs = ch_input.lastal
+        .map { meta, target, query, _alignment -> [ meta, target, query ] }
 
     //
     // Build one LAST index per distinct (target FASTA, lastdb arguments)
@@ -45,17 +60,35 @@ workflow PAIRWISE_ALIGN {
     LAST_LASTAL ( ch_lastal_in.query, ch_lastal_in.index )
 
     //
-    // MAF to PSL, the input of axtChain (no reference files are needed for PSL)
+    // Alignment inputs: check that their target and query sequences are those of the pair's genomes
+    // (names and lengths), so that a wrong genome or swapped target and query stop the pipeline here
+    //
+    CHECK_ALIGNMENT (
+        ch_input.alignment
+            .map { meta, _target, _query, alignment -> [ meta, alignment ] }
+            .join(ch_sizes, failOnDuplicate: true)
+    )
+    def ch_checked = CHECK_ALIGNMENT.out.alignment
+        .branch { meta, _alignment ->
+            maf: meta.alignment_format == 'maf'
+            psl: true
+        }
+
+    //
+    // MAF to PSL, the input of axtChain (no reference files are needed for PSL). A PSL input goes to the
+    // chaining as it is.
     //
     LAST_MAFCONVERT (
-        LAST_LASTAL.out.maf.map { meta, maf -> [ meta, maf, 'psl' ] },
+        LAST_LASTAL.out.maf
+            .mix(ch_checked.maf)
+            .map { meta, maf -> [ meta, maf, 'psl' ] },
         [ [:], [], [], [], [], [] ]
     )
 
     emit:
-    maf   = LAST_LASTAL.out.maf              // channel: [ val(meta), path(maf.gz) ]
-    stats = LAST_LASTAL.out.multiqc          // channel: [ val(meta), path(tsv) ]
-    psl   = LAST_MAFCONVERT.out.alignment    // channel: [ val(meta), path(psl.gz) ]
+    maf   = LAST_LASTAL.out.maf                                // channel: [ val(meta), path(maf.gz) ], pairs aligned with LAST
+    stats = LAST_LASTAL.out.multiqc                            // channel: [ val(meta), path(tsv) ], pairs aligned with LAST
+    psl   = LAST_MAFCONVERT.out.alignment.mix(ch_checked.psl)  // channel: [ val(meta), path(psl) ], every pair
 }
 
 //

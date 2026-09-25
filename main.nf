@@ -28,7 +28,7 @@ include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_wgpa
 workflow DABAR_WGPA {
 
     take:
-    samplesheet // channel: [ val(meta), path(target_fasta), path(query_fasta) ], one item per genome pair
+    samplesheet // channel: [ val(meta), path(target_fasta), path(query_fasta), path(alignment) ], one item per genome pair (alignment = [] if not given)
 
     main:
 

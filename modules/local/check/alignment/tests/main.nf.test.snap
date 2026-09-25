@@ -1,0 +1,137 @@
+{
+    "yeast_small - maf.gz - stub": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test",
+                            "target_name": "scer_small",
+                            "query_name": "seub_small"
+                        },
+                        "small.maf.gz:md5,d8c42bf0686b17ee9c40d84d6d9d9f11"
+                    ]
+                ],
+                "1": [
+                    [
+                        "CHECK_ALIGNMENT",
+                        "gawk",
+                        "5.3.1"
+                    ]
+                ],
+                "alignment": [
+                    [
+                        {
+                            "id": "test",
+                            "target_name": "scer_small",
+                            "query_name": "seub_small"
+                        },
+                        "small.maf.gz:md5,d8c42bf0686b17ee9c40d84d6d9d9f11"
+                    ]
+                ],
+                "versions_gawk": [
+                    [
+                        "CHECK_ALIGNMENT",
+                        "gawk",
+                        "5.3.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-09-25T12:29:42.92043",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "yeast_small - maf.gz": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test",
+                            "target_name": "scer_small",
+                            "query_name": "seub_small"
+                        },
+                        "small.maf.gz:md5,d8c42bf0686b17ee9c40d84d6d9d9f11"
+                    ]
+                ],
+                "1": [
+                    [
+                        "CHECK_ALIGNMENT",
+                        "gawk",
+                        "5.3.1"
+                    ]
+                ],
+                "alignment": [
+                    [
+                        {
+                            "id": "test",
+                            "target_name": "scer_small",
+                            "query_name": "seub_small"
+                        },
+                        "small.maf.gz:md5,d8c42bf0686b17ee9c40d84d6d9d9f11"
+                    ]
+                ],
+                "versions_gawk": [
+                    [
+                        "CHECK_ALIGNMENT",
+                        "gawk",
+                        "5.3.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-09-25T12:29:30.017948",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "yeast_small - psl": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test",
+                            "target_name": "scer_small",
+                            "query_name": "seub_small"
+                        },
+                        "small.psl:md5,6cd0579523b4941880fa24fff7b9425f"
+                    ]
+                ],
+                "1": [
+                    [
+                        "CHECK_ALIGNMENT",
+                        "gawk",
+                        "5.3.1"
+                    ]
+                ],
+                "alignment": [
+                    [
+                        {
+                            "id": "test",
+                            "target_name": "scer_small",
+                            "query_name": "seub_small"
+                        },
+                        "small.psl:md5,6cd0579523b4941880fa24fff7b9425f"
+                    ]
+                ],
+                "versions_gawk": [
+                    [
+                        "CHECK_ALIGNMENT",
+                        "gawk",
+                        "5.3.1"
+                    ]
+                ]
+            }
+        ],
+        "timestamp": "2026-09-25T12:29:32.658551",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

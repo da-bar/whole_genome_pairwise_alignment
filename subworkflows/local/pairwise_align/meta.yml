@@ -3,7 +3,9 @@ name: "pairwise_align"
 description: |
   Align each query genome to its target genome with LAST (lastdb -c, lastal with the CNEr preset
   options and scoring matrix) and convert the MAF alignments to PSL. One LAST index is built per
-  distinct (target FASTA, lastdb arguments).
+  distinct (target FASTA, lastdb arguments) of the pairs aligned with LAST. A pair with an alignment
+  input (samplesheet column alignment, MAF or PSL) skips LAST: its sequence names and lengths are
+  checked against the pair's sizes files (check/alignment), and a MAF is converted to PSL.
 keywords:
   - alignment
   - whole-genome alignment
@@ -14,39 +16,47 @@ components:
   - last/lastdb
   - last/lastal
   - last/mafconvert
+  - check/alignment
 input:
-  - ch_pairs:
+  - ch_samplesheet:
       type: file
       description: |
         Channel with one item per genome pair
-        Structure: [ val(meta), path(target_fasta), path(query_fasta) ]
-        meta: [ id, preset, target_name, query_name ]
-      pattern: "*.{fa,fasta,fna}{,.gz}"
+        Structure: [ val(meta), path(target_fasta), path(query_fasta), path(alignment) ]
+        meta: [ id, preset, target_name, query_name ], plus alignment_format ('maf' or 'psl') for a pair
+        with an alignment input; alignment is [] for a pair aligned with LAST
+      pattern: "*.{fa,fasta,fna,maf,psl}{,.gz}"
   - ch_lastal_matrix:
       type: file
       description: |
         The scoring matrix of each pair's preset, for lastal -p
         Structure: [ val(meta), path(lastal_matrix) ]
       pattern: "*.lastal.mat"
+  - ch_sizes:
+      type: file
+      description: |
+        The sizes files of each pair's target and query genomes, for checking alignment inputs
+        Structure: [ val(meta), path(target_sizes), path(query_sizes) ]
+      pattern: "*.sizes"
 output:
   - maf:
       type: file
       description: |
-        Gzipped MAF alignment of each pair
+        Gzipped MAF alignment of each pair aligned with LAST
         Structure: [ val(meta), path(maf.gz) ]
       pattern: "*.maf.gz"
   - stats:
       type: file
       description: |
-        Alignment statistics from LAST_LASTAL
+        Alignment statistics from LAST_LASTAL, for each pair aligned with LAST
         Structure: [ val(meta), path(tsv) ]
       pattern: "*.tsv"
   - psl:
       type: file
       description: |
-        Gzipped PSL alignment of each pair
-        Structure: [ val(meta), path(psl.gz) ]
-      pattern: "*.psl.gz"
+        PSL alignment of each pair: gzipped output of maf-convert psl, or a PSL alignment input as given
+        Structure: [ val(meta), path(psl) ]
+      pattern: "*.psl{,.gz}"
 authors:
   - "@da-bar"
 maintainers:

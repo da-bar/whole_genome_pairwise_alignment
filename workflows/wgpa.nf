@@ -20,7 +20,8 @@ include { LIFTOVER_CHAINS        } from '../subworkflows/local/liftover_chains'
 workflow WGPA {
 
     take:
-    ch_samplesheet // channel: [ val(meta), path(target_fasta), path(query_fasta) ], meta = [ id, preset, target_name, query_name ]
+    ch_samplesheet // channel: [ val(meta), path(target_fasta), path(query_fasta), path(alignment) ], meta = [ id, preset, target_name, query_name ]
+                   //          alignment = [] unless the samplesheet gives one; then meta also has alignment_format ('maf' or 'psl')
     outdir         //  string: output directory
     liftover       // boolean: make liftOver chains
 
@@ -32,7 +33,7 @@ workflow WGPA {
     // Scoring matrices of each pair's preset (CNEr near/medium/far), from assets/matrices
     //
     def ch_matrices = ch_samplesheet
-        .map { meta, _target, _query ->
+        .map { meta, _target, _query, _alignment ->
             [
                 meta,
                 file("${projectDir}/assets/matrices/${meta.preset}.lastal.mat", checkIfExists: true),
@@ -41,20 +42,26 @@ workflow WGPA {
         }
 
     //
-    // SUBWORKFLOW: 2bit and sizes, once per distinct genome FASTA
+    // SUBWORKFLOW: 2bit and sizes, once per distinct genome FASTA (every pair has both FASTA files, also a
+    // pair with an alignment input)
     //
-    PREPARE_GENOMES ( ch_samplesheet )
-
-    //
-    // SUBWORKFLOW: LAST alignment of the query to the target, MAF and PSL
-    //
-    PAIRWISE_ALIGN (
-        ch_samplesheet,
-        ch_matrices.map { meta, lastal_matrix, _axtchain_matrix -> [ meta, lastal_matrix ] }
+    PREPARE_GENOMES (
+        ch_samplesheet.map { meta, target, query, _alignment -> [ meta, target, query ] }
     )
 
     //
-    // SUBWORKFLOW: chains, nets and net alignments (axt)
+    // SUBWORKFLOW: LAST alignment of the query to the target, MAF and PSL; or the pair's alignment input,
+    // checked against the pair's genomes and converted to PSL
+    //
+    PAIRWISE_ALIGN (
+        ch_samplesheet,
+        ch_matrices.map { meta, lastal_matrix, _axtchain_matrix -> [ meta, lastal_matrix ] },
+        PREPARE_GENOMES.out.genomes.map { meta, _target_twobit, target_sizes, _query_twobit, query_sizes -> [ meta, target_sizes, query_sizes ] }
+    )
+
+    //
+    // SUBWORKFLOW: chains, nets and net alignments (axt). axtChain uses the preset's options and score scheme
+    // for every pair, also for an alignment input.
     //
     CHAIN_NET (
         PAIRWISE_ALIGN.out.psl,
