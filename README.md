@@ -1,83 +1,90 @@
-# Whole Genome Pairwise Alignment Pipeline
+# da-bar/wgpa
+
+[![GitHub Actions CI Status](https://github.com/da-bar/wgpa/actions/workflows/nf-test.yml/badge.svg)](https://github.com/da-bar/wgpa/actions/workflows/nf-test.yml)
+[![GitHub Actions Linting Status](https://github.com/da-bar/wgpa/actions/workflows/linting.yml/badge.svg)](https://github.com/da-bar/wgpa/actions/workflows/linting.yml)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
+[![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
+
+[![Nextflow](https://img.shields.io/badge/version-%E2%89%A525.10.4-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
+[![nf-core template version](https://img.shields.io/badge/nf--core_template-4.1.0-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/4.1.0)
+[![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
+[![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
+[![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
+[![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/da-bar/wgpa)
 
 ## Introduction
 
-This pipeline is a comprehensive tool for whole genome pairwise alignment using `lastal`. It is designed to facilitate alignment, chaining, and netting of genomic data. The primary objective is to provide an efficient and user-friendly approach to comparative genomics, specifically for aligning entire genomes.
+**da-bar/wgpa** is a bioinformatics pipeline that ...
 
-## Requirements
+<!-- TODO nf-core:
+   Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
+   major pipeline sections and the types of output it produces. You're giving an overview to someone new
+   to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction
+-->
 
-- **Nextflow**: Workflow management that allows the pipeline to be run across multiple compute infrastructures in a portable manner.
-- **R**: The pipeline requires R to be installed, along with the `CNEr` package, which is used for handling genomic alignment data.
-- **lastal**: A tool used for the alignment step of the pipeline.
-- **kentUtils**: A collection of command-line tools for manipulating, analyzing, and visualizing genomic datasets.
-
-## Installation
-
-To install the pipeline, clone the repository from GitHub:
-
-    git clone https://github.com/da-bar/whole_genome_pairwise_alignment.git
+<!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
+     workflows use the "tube map" design for that. See https://nf-co.re/docs/community/brand/workflow-schematics#examples for examples.   -->
+<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
 
 ## Usage
 
-To run the pipeline, use the following command:
+> [!NOTE]
+> If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/get_started/environment_setup/overview) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/get_started/run-your-first-pipeline) with `-profile test` before running the workflow on actual data.
 
-    nextflow run main.nf -c nextflow.config
+<!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
+     Explain what rows and columns represent. For instance (please edit as appropriate):
 
-### Configuration
+First, prepare a samplesheet with your input data that looks as follows:
 
-Configure the pipeline by editing the `nextflow.config` file. A typical configuration might look like this:
+`samplesheet.csv`:
 
-    params {
-        reference = '/path/to/reference/reference.fasta'
-        query = '/path/to/query/query.fasta'
-        output = '/path/to/output_folder'
-    }
+```csv
+sample,fastq_1,fastq_2
+CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+```
 
-## Parameters
+Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
 
-Details about the parameters used in the pipeline will be provided (TBA).
+-->
 
-## Process Description
+Now, you can run the pipeline using:
 
-1. **Aligning with lastal**: Performs whole genome alignments using the `lastal` tool.
-2. **Chaining the Alignment**: Chains the alignment data for better genomic alignment interpretation.
-3. **Netting the Chains**: Applies a netting process on the chained data to filter and refine alignments.
-4. **Export in axt Format**: The final alignments are exported in the `axt` file format for further analysis.
+<!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->
 
-## Output
+```bash
+nextflow run da-bar/wgpa \
+   -profile <docker/singularity/.../institute> \
+   --input samplesheet.csv \
+   --outdir <OUTDIR>
+```
 
-The pipeline produces several outputs, including:
+> [!WARNING]
+> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/running/run-pipelines#using-parameter-files).
 
-- Alignment in MAF (Multiple Alignment Format) file.
-- Alignment in PSL (Pairwise Sequence Alignment) format.
-- Chained alignment files.
-- Filtered chains and syntenic nets.
-- Final netted alignment in AXT format.
+## Credits
 
-## Example
+da-bar/wgpa was originally written by Damir Baranasic.
 
-An example Nextflow config, along with test genomes of _S. cerevisiae_ and _S. eubayanus_, will be included in the GitHub repository.
+We thank the following people for their extensive assistance in the development of this pipeline:
 
-## Contributing
+<!-- TODO nf-core: If applicable, make list of people who have also contributed -->
 
-Contributions to the pipeline are welcome. Please raise an issue or a pull request on the GitHub repository. For direct communication, contact the author via email.
+## Contributions and Support
 
-## License
+If you would like to contribute to this pipeline, please see the [contributing guidelines](docs/CONTRIBUTING.md).
 
-This software is available under the MIT license. Please refer to the [LICENSE](LICENSE) file in the repository for more details.
+## Citations
 
-## Third-party software
+<!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
+<!-- If you use da-bar/wgpa for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
 
-This pipeline relies on external tools: CNEr, kentUtils, and the LAST aligner. It does not distribute these tools or incorporate their source code. Users are responsible for obtaining them and complying with their licences independently:
+<!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
 
-- **CNEr** is used for handling genomic alignment data. Users should adhere to the terms and conditions set forth by the authors of CNEr.
-- **kentUtils** is a suite of biological analysis and web display programs developed by the UCSC Genome Bioinformatics Group and Jim Kent. Use of these utilities through this pipeline should comply with their licensing terms.
-- **LAST** is used for sequence alignment. Users should comply with the licensing terms of the LAST aligner.
+An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
 
-Users intending to use this pipeline for commercial purposes should consult and adhere to the licensing terms of CNEr, kentUtils, and the LAST aligner, as this pipeline operates in conjunction with these tools.
+This pipeline uses code and infrastructure developed and maintained by the [nf-core](https://nf-co.re) community, reused here under the [MIT license](https://github.com/nf-core/tools/blob/main/LICENSE).
 
-## Citation
-
-If you use this pipeline in your research, please cite the CNEr paper:
-
-https://doi.org/10.1371/journal.pcbi.1006940
+> **The nf-core framework for community-curated bioinformatics pipelines.**
+>
+> Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso & Sven Nahnsen.
+>
+> _Nat Biotechnol._ 2020 Feb 13. doi: [10.1038/s41587-020-0439-x](https://dx.doi.org/10.1038/s41587-020-0439-x).

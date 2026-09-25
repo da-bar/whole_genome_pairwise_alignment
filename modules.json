@@ -1,0 +1,56 @@
+{
+    "name": "da-bar/wgpa",
+    "homePage": "https://github.com/da-bar/wgpa",
+    "repos": {
+        "https://github.com/nf-core/modules.git": {
+            "modules": {
+                "nf-core": {
+                    "last/lastal": {
+                        "branch": "master",
+                        "git_sha": "a37e7925c5dbd382ddd23a1b3b7d6326449b1aa2",
+                        "installed_by": ["modules"]
+                    },
+                    "last/lastdb": {
+                        "branch": "master",
+                        "git_sha": "a37e7925c5dbd382ddd23a1b3b7d6326449b1aa2",
+                        "installed_by": ["modules"]
+                    },
+                    "last/mafconvert": {
+                        "branch": "master",
+                        "git_sha": "a37e7925c5dbd382ddd23a1b3b7d6326449b1aa2",
+                        "installed_by": ["modules"]
+                    },
+                    "last/train": {
+                        "branch": "master",
+                        "git_sha": "a37e7925c5dbd382ddd23a1b3b7d6326449b1aa2",
+                        "installed_by": ["modules"]
+                    },
+                    "ucsc/liftover": {
+                        "branch": "master",
+                        "git_sha": "6d46786420b4d7bc88eba026eb389c0c5535d120",
+                        "installed_by": ["modules"]
+                    }
+                }
+            },
+            "subworkflows": {
+                "nf-core": {
+                    "utils_nextflow_pipeline": {
+                        "branch": "master",
+                        "git_sha": "c2b22d85f30a706a3073387f30380704fcae013b",
+                        "installed_by": ["subworkflows"]
+                    },
+                    "utils_nfcore_pipeline": {
+                        "branch": "master",
+                        "git_sha": "a3fb7351b1fdb2b1de282b765816bbea190e86a8",
+                        "installed_by": ["subworkflows"]
+                    },
+                    "utils_nfschema_plugin": {
+                        "branch": "master",
+                        "git_sha": "a7b27fd25bfa8dcc07d299e88bd790585901a436",
+                        "installed_by": ["subworkflows"]
+                    }
+                }
+            }
+        }
+    }
+}
