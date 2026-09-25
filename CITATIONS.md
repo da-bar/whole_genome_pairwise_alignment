@@ -10,6 +10,18 @@
 
 ## Pipeline tools
 
+- [LAST](https://pubmed.ncbi.nlm.nih.gov/21209072/)
+
+  > Kiełbasa SM, Wan R, Sato K, Horton P, Frith MC. Adaptive seeds tame genomic sequence comparison. Genome Res. 2011 Mar;21(3):487-493. doi: 10.1101/gr.113985.110. PubMed PMID: 21209072.
+
+- [UCSC chains and nets](https://pubmed.ncbi.nlm.nih.gov/14500911/) (kent utilities: faToTwoBit, twoBitInfo, axtChain, chainMergeSort, chainPreNet, chainNet, netSyntenic, netToAxt, axtSort, netChainSubset, chainStitchId)
+
+  > Kent WJ, Baertsch R, Hinrichs A, Miller W, Haussler D. Evolution's cauldron: duplication, deletion, and rearrangement in the mouse and human genomes. Proc Natl Acad Sci U S A. 2003 Sep 30;100(20):11484-11489. doi: 10.1073/pnas.1932072100. PubMed PMID: 14500911.
+
+- [CNEr](https://pubmed.ncbi.nlm.nih.gov/31449516/) (alignment presets and scoring matrices; v1.0.0 ran the tools through CNEr)
+
+  > Tan G, Polychronopoulos D, Lenhard B. CNEr: A toolkit for exploring extreme noncoding conservation. PLoS Comput Biol. 2019 Aug;15(8):e1006940. doi: 10.1371/journal.pcbi.1006940. PubMed PMID: 31449516.
+
 ## Software packaging/containerisation tools
 
 - [Anaconda](https://anaconda.com)

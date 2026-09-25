@@ -149,4 +149,7 @@ If you update images or graphics, follow the nf-core [style guidelines](https://
 
 ## Pipeline specific contribution guidelines
 
-<!-- TODO nf-core: Add any pipeline specific contribution guidelines here, such as coding styles, procedures, checklists etc. -->
+- Keep the outputs reproducible: compress text outputs with `gzip -n`, and keep `lastal` single-threaded (see `docs/usage.md`).
+- The UCSC kent tools are local modules in `modules/local/ucsc/<tool>`, written in the style of the nf-core `ucsc/liftover` module. Their tests compare the outputs with fixtures in `tests/data/yeast_small`, made with the v1.0.0 command lines.
+- Process options go in `conf/modules.config`, with selectors that name the subworkflow (for example `'.*:CHAIN_NET:UCSC_AXTCHAIN'`), so that they do not change the module tests.
+- Run `nf-test test` before opening a pull request. The pipeline test checks the outputs against the v1.0.0 checksums in `tests/data/yeast/v1.0.0_md5.txt`; a change that breaks this parity must be deliberate and documented in `CHANGELOG.md`.

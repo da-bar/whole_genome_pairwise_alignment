@@ -4,28 +4,107 @@ nextflow_pipeline {
     script "../main.nf"
     tag "pipeline"
 
+    // The test profile (conf/test.config) reads assets/samplesheet_test.csv, which downloads the v1.0.0
+    // yeast FASTA files from GitHub. The tests use the identical copies in tests/data/yeast instead, so
+    // they run offline. The samplesheet is written to this test's own launch directory.
+    //
+    // LAST_LASTAL runs with one thread (conf/base.config): with lastal -P > 1 the MAF block order, and
+    // hence every chain, net and axt file, can change from run to run.
+
     test("-profile test") {
 
         when {
+            def samplesheet = new File("${launchDir}/samplesheet_test_local.csv")
+            samplesheet.text = [
+                'id,target,query,preset',
+                "S_cerevisiae_vs_S_eubayanus,${projectDir}/tests/data/yeast/S_cerevisiae.fa,${projectDir}/tests/data/yeast/S_eubayanus.fa,near",
+            ].join('\n') + '\n'
             params {
+                input  = samplesheet.toString()
                 outdir = "$outputDir"
             }
         }
 
         then {
+            // v1.0.0 reference checksums: "<md5>  <file name>"; the maf entry is the md5 of the MAF body ('#' lines removed)
+            def v1 = [:]
+            new File("${projectDir}/tests/data/yeast/v1.0.0_md5.txt").eachLine { line ->
+                if (line.trim() && !line.startsWith('#')) {
+                    def fields = line.trim().split(/\s+/)
+                    v1[fields[1]] = fields[0]
+                }
+            }
+            def gunzip_md5 = { f ->
+                new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withCloseable { gz -> gz.bytes.md5() }
+            }
+            def maf_body_md5 = { f ->
+                def digest = java.security.MessageDigest.getInstance('MD5')
+                new java.util.zip.GZIPInputStream(new FileInputStream(f.toString())).withReader('UTF-8') { reader ->
+                    reader.eachLine { line ->
+                        if (!line.startsWith('#')) {
+                            digest.update((line + '\n').getBytes('UTF-8'))
+                        }
+                    }
+                }
+                digest.digest().encodeHex().toString()
+            }
+            def pair = "${params.outdir}/S_cerevisiae_vs_S_eubayanus"
+            def stem = 'S_cerevisiae_S_eubayanus'
+
             // stable_path: All files + folders in ${params.outdir}/ with a stable path (including file name)
             def stable_path = getAllFilesFromDir(params.outdir, relative: true, includeDir: true, ignore: ['pipeline_info/*.{html,json,txt}'])
             // stable_content: All files in ${params.outdir}/ with stable content
             def stable_content = getAllFilesFromDir(params.outdir, ignoreFile: 'tests/.nftignore')
             assert workflow.success
             assertAll(
+                // Parity with v1.0.0 (tests/data/yeast/v1.0.0_md5.txt), decompressing the gzipped v2 outputs
+                { assert v1.size() == 8 },
+                { assert maf_body_md5("${pair}/alignment/${stem}.maf.gz")              == v1["${stem}.maf.body"] },
+                { assert gunzip_md5("${pair}/alignment/${stem}.psl.gz")                == v1["${stem}.psl"] },
+                { assert gunzip_md5("${pair}/chains/${stem}.all.chain.gz")             == v1["${stem}.all.chain"] },
+                { assert gunzip_md5("${pair}/chains/${stem}.all.pre.chain.gz")         == v1["${stem}.all.pre.chain"] },
+                { assert gunzip_md5("${pair}/nets/${stem}.noClass.net.gz")             == v1["${stem}.noClass.net"] },
+                { assert gunzip_md5("${pair}/axt/${stem}.net.axt.gz")                  == v1["${stem}.net.axt"] },
+                { assert path("${params.outdir}/genomes/S_cerevisiae.2bit").md5        == v1['S_cerevisiae.2bit'] },
+                { assert path("${params.outdir}/genomes/S_eubayanus.2bit").md5         == v1['S_eubayanus.2bit'] },
+                // v1 ran axtChain on the single PSL, so its chains are the all.chain
+                { assert gunzip_md5("${pair}/chains/${stem}.chain.gz")                 == v1["${stem}.all.chain"] },
                 { assert snapshot(
-                    // pipeline versions.yml file for multiqc from which Nextflow version is removed because we test pipelines on multiple Nextflow versions
-                    removeNextflowVersion("$outputDir/pipeline_info/wgpa_software_mqc_versions.yml"),
+                    // pipeline versions.yml file from which Nextflow version is removed because we test pipelines on multiple Nextflow versions
+                    removeNextflowVersion("$outputDir/pipeline_info/wgpa_software_versions.yml"),
                     // All stable path name, with a relative path
                     stable_path,
                     // All files with stable contents
                     stable_content
+                ).match() }
+            )
+        }
+    }
+
+    test("-profile test -stub") {
+
+        options "-stub"
+
+        when {
+            def samplesheet = new File("${launchDir}/samplesheet_test_local.csv")
+            samplesheet.text = [
+                'id,target,query,preset',
+                "S_cerevisiae_vs_S_eubayanus,${projectDir}/tests/data/yeast/S_cerevisiae.fa,${projectDir}/tests/data/yeast/S_eubayanus.fa,near",
+            ].join('\n') + '\n'
+            params {
+                input  = samplesheet.toString()
+                outdir = "$outputDir"
+            }
+        }
+
+        then {
+            // stable_name: All files + folders in ${params.outdir}/ with a stable name
+            def stable_name = getAllFilesFromDir(params.outdir, relative: true, includeDir: true, ignore: ['pipeline_info/*.{html,json,txt}'])
+            assert workflow.success
+            assertAll(
+                { assert snapshot(
+                    removeNextflowVersion("$outputDir/pipeline_info/wgpa_software_versions.yml"),
+                    stable_name
                 ).match() }
             )
         }

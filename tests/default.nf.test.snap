@@ -1,0 +1,183 @@
+{
+    "-profile test": {
+        "content": [
+            {
+                "LAST_LASTAL": {
+                    "last": 1652
+                },
+                "LAST_LASTDB": {
+                    "last": 1652
+                },
+                "LAST_MAFCONVERT": {
+                    "last": 1652
+                },
+                "UCSC_AXTCHAIN": {
+                    "ucsc": 482
+                },
+                "UCSC_AXTSORT": {
+                    "ucsc": 482
+                },
+                "UCSC_CHAINMERGESORT": {
+                    "ucsc": 482
+                },
+                "UCSC_CHAINNET": {
+                    "ucsc": 482
+                },
+                "UCSC_CHAINPRENET": {
+                    "ucsc": 482
+                },
+                "UCSC_CHAINSTITCHID": {
+                    "ucsc": 482
+                },
+                "UCSC_FATOTWOBIT": {
+                    "ucsc": 482
+                },
+                "UCSC_NETCHAINSUBSET": {
+                    "ucsc": 482
+                },
+                "UCSC_NETSYNTENIC": {
+                    "ucsc": 482
+                },
+                "UCSC_NETTOAXT": {
+                    "ucsc": 482
+                },
+                "UCSC_TWOBITINFO": {
+                    "ucsc": 482
+                },
+                "Workflow": {
+                    "da-bar/wgpa": "v2.0.0dev"
+                }
+            },
+            [
+                "S_cerevisiae_vs_S_eubayanus",
+                "S_cerevisiae_vs_S_eubayanus/alignment",
+                "S_cerevisiae_vs_S_eubayanus/alignment/S_cerevisiae_S_eubayanus.maf.gz",
+                "S_cerevisiae_vs_S_eubayanus/alignment/S_cerevisiae_S_eubayanus.psl.gz",
+                "S_cerevisiae_vs_S_eubayanus/alignment/S_cerevisiae_S_eubayanus.tsv",
+                "S_cerevisiae_vs_S_eubayanus/axt",
+                "S_cerevisiae_vs_S_eubayanus/axt/S_cerevisiae_S_eubayanus.net.axt.gz",
+                "S_cerevisiae_vs_S_eubayanus/chains",
+                "S_cerevisiae_vs_S_eubayanus/chains/S_cerevisiae_S_eubayanus.all.chain.gz",
+                "S_cerevisiae_vs_S_eubayanus/chains/S_cerevisiae_S_eubayanus.all.pre.chain.gz",
+                "S_cerevisiae_vs_S_eubayanus/chains/S_cerevisiae_S_eubayanus.chain.gz",
+                "S_cerevisiae_vs_S_eubayanus/liftover",
+                "S_cerevisiae_vs_S_eubayanus/liftover/S_cerevisiaeToS_eubayanus.over.chain.gz",
+                "S_cerevisiae_vs_S_eubayanus/nets",
+                "S_cerevisiae_vs_S_eubayanus/nets/S_cerevisiae_S_eubayanus.noClass.net.gz",
+                "S_cerevisiae_vs_S_eubayanus/nets/S_cerevisiae_S_eubayanus.query.net.gz",
+                "S_cerevisiae_vs_S_eubayanus/nets/S_cerevisiae_S_eubayanus.target.net.gz",
+                "genomes",
+                "genomes/S_cerevisiae.2bit",
+                "genomes/S_cerevisiae.sizes",
+                "genomes/S_eubayanus.2bit",
+                "genomes/S_eubayanus.sizes",
+                "pipeline_info",
+                "pipeline_info/wgpa_software_versions.yml"
+            ],
+            [
+                "S_cerevisiae_S_eubayanus.maf.gz:md5,e4f3599a2993d1724556fa6e30410685",
+                "S_cerevisiae_S_eubayanus.psl.gz:md5,5e0f56d2faf48330d1c4681d046defec",
+                "S_cerevisiae_S_eubayanus.tsv:md5,71b136f2b8503d897276f366ab667416",
+                "S_cerevisiae_S_eubayanus.net.axt.gz:md5,71aef8125bb2887171ecdd74823668c8",
+                "S_cerevisiae_S_eubayanus.all.chain.gz:md5,ebb827db4acc69faf4ef820ed2eec8b8",
+                "S_cerevisiae_S_eubayanus.all.pre.chain.gz:md5,fbbdfc48856b21fae4f89c147c395154",
+                "S_cerevisiae_S_eubayanus.chain.gz:md5,ebb827db4acc69faf4ef820ed2eec8b8",
+                "S_cerevisiaeToS_eubayanus.over.chain.gz:md5,d313f2f3facb1485e69abbf893b41f97",
+                "S_cerevisiae_S_eubayanus.noClass.net.gz:md5,d62e508f7cce168869560c2d9e9a5474",
+                "S_cerevisiae_S_eubayanus.query.net.gz:md5,07ce81c96ca26942c155bd952c796454",
+                "S_cerevisiae_S_eubayanus.target.net.gz:md5,7749a96a08d613f9c14354de70c4594a",
+                "S_cerevisiae.2bit:md5,a0f88a4539029dc53fa180699070e5d4",
+                "S_cerevisiae.sizes:md5,8b33f63109b0203984ade4df9156da6d",
+                "S_eubayanus.2bit:md5,95db56c5ba96fe36dd8e24ec915e5c6a",
+                "S_eubayanus.sizes:md5,5f648518def8828a5b0592cde59372a0"
+            ]
+        ],
+        "timestamp": "2026-09-25T10:57:18.514009",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    },
+    "-profile test -stub": {
+        "content": [
+            {
+                "LAST_LASTAL": {
+                    "last": 1652
+                },
+                "LAST_LASTDB": {
+                    "last": 1652
+                },
+                "LAST_MAFCONVERT": {
+                    "last": 1652
+                },
+                "UCSC_AXTCHAIN": {
+                    "ucsc": 482
+                },
+                "UCSC_AXTSORT": {
+                    "ucsc": 482
+                },
+                "UCSC_CHAINMERGESORT": {
+                    "ucsc": 482
+                },
+                "UCSC_CHAINNET": {
+                    "ucsc": 482
+                },
+                "UCSC_CHAINPRENET": {
+                    "ucsc": 482
+                },
+                "UCSC_CHAINSTITCHID": {
+                    "ucsc": 482
+                },
+                "UCSC_FATOTWOBIT": {
+                    "ucsc": 482
+                },
+                "UCSC_NETCHAINSUBSET": {
+                    "ucsc": 482
+                },
+                "UCSC_NETSYNTENIC": {
+                    "ucsc": 482
+                },
+                "UCSC_NETTOAXT": {
+                    "ucsc": 482
+                },
+                "UCSC_TWOBITINFO": {
+                    "ucsc": 482
+                },
+                "Workflow": {
+                    "da-bar/wgpa": "v2.0.0dev"
+                }
+            },
+            [
+                "S_cerevisiae_vs_S_eubayanus",
+                "S_cerevisiae_vs_S_eubayanus/alignment",
+                "S_cerevisiae_vs_S_eubayanus/alignment/S_cerevisiae_S_eubayanus.STUB.maf.gz",
+                "S_cerevisiae_vs_S_eubayanus/alignment/S_cerevisiae_S_eubayanus.psl.gz",
+                "S_cerevisiae_vs_S_eubayanus/alignment/S_cerevisiae_S_eubayanus.tsv",
+                "S_cerevisiae_vs_S_eubayanus/axt",
+                "S_cerevisiae_vs_S_eubayanus/axt/S_cerevisiae_S_eubayanus.net.axt.gz",
+                "S_cerevisiae_vs_S_eubayanus/chains",
+                "S_cerevisiae_vs_S_eubayanus/chains/S_cerevisiae_S_eubayanus.all.chain.gz",
+                "S_cerevisiae_vs_S_eubayanus/chains/S_cerevisiae_S_eubayanus.all.pre.chain.gz",
+                "S_cerevisiae_vs_S_eubayanus/chains/S_cerevisiae_S_eubayanus.chain.gz",
+                "S_cerevisiae_vs_S_eubayanus/liftover",
+                "S_cerevisiae_vs_S_eubayanus/liftover/S_cerevisiaeToS_eubayanus.over.chain.gz",
+                "S_cerevisiae_vs_S_eubayanus/nets",
+                "S_cerevisiae_vs_S_eubayanus/nets/S_cerevisiae_S_eubayanus.noClass.net.gz",
+                "S_cerevisiae_vs_S_eubayanus/nets/S_cerevisiae_S_eubayanus.query.net.gz",
+                "S_cerevisiae_vs_S_eubayanus/nets/S_cerevisiae_S_eubayanus.target.net.gz",
+                "genomes",
+                "genomes/S_cerevisiae.2bit",
+                "genomes/S_cerevisiae.sizes",
+                "genomes/S_eubayanus.2bit",
+                "genomes/S_eubayanus.sizes",
+                "pipeline_info",
+                "pipeline_info/wgpa_software_versions.yml"
+            ]
+        ],
+        "timestamp": "2026-09-25T10:57:22.901397",
+        "meta": {
+            "nf-test": "0.9.5",
+            "nextflow": "26.04.6"
+        }
+    }
+}

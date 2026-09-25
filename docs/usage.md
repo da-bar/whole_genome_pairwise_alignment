@@ -4,59 +4,99 @@
 
 ## Introduction
 
-<!-- TODO nf-core: Add documentation about anything specific to running your pipeline. For general topics, please point to (and add to) the main nf-core website. -->
+da-bar/wgpa aligns genome pairs with LAST and chains and nets the alignments with the UCSC kent utilities, using the CNEr presets. Each row of the samplesheet is one pair: a target (reference) genome and a query genome. The target is the genome that the chains, nets, axt files and liftOver chains are referenced to; the query is aligned to it.
 
 ## Samplesheet input
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.
+You will need to create a samplesheet with information about the genome pairs you would like to align before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 or 4 columns, and a header row as shown in the examples below.
 
 ```bash
 --input '[path to samplesheet file]'
 ```
 
-### Multiple runs of the same sample
-
-The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across 3 lanes:
-
 ```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz
+id,target,query,preset
+scer_vs_seub,/data/genomes/S_cerevisiae.fa,/data/genomes/S_eubayanus.fa,near
+scer_vs_spar,/data/genomes/S_cerevisiae.fa,/data/genomes/S_paradoxus.fa.gz,
+seub_vs_scer,/data/genomes/S_eubayanus.fa,/data/genomes/S_cerevisiae.fa,near
 ```
 
-### Full samplesheet
-
-The pipeline will auto-detect whether a sample is single- or paired-end using the information provided in the samplesheet. The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 3 columns to match those defined in the table below.
-
-A final samplesheet file consisting of both single- and paired-end data may look something like the one below. This is for 6 samples, where `TREATMENT_REP3` has been sequenced twice.
-
-```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP2,AEG588A2_S2_L002_R1_001.fastq.gz,AEG588A2_S2_L002_R2_001.fastq.gz
-CONTROL_REP3,AEG588A3_S3_L002_R1_001.fastq.gz,AEG588A3_S3_L002_R2_001.fastq.gz
-TREATMENT_REP1,AEG588A4_S4_L003_R1_001.fastq.gz,
-TREATMENT_REP2,AEG588A5_S5_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L004_R1_001.fastq.gz,
-```
-
-| Column    | Description                                                                                                                                                                            |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
-| `fastq_1` | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
-| `fastq_2` | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+| Column   | Description                                                                                                                |
+| -------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `id`     | Unique name of the pair. It cannot contain spaces or `/`. The outputs of the pair are written to `<outdir>/<id>/`.         |
+| `target` | Target genome FASTA file, with the extension `.fa`, `.fasta` or `.fna`, optionally followed by `.gz`.                      |
+| `query`  | Query genome FASTA file, same formats as `target`.                                                                         |
+| `preset` | Optional. `near`, `medium` or `far` (see [Presets](#presets)). Leave it empty, or leave the column out, to use `--preset`. |
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
+
+Notes:
+
+- The genome name is the FASTA file name without `.fa`, `.fasta` or `.fna` (and `.gz`), as in v1.0.0. The output files of a pair are named `<target name>_<query name>.*`, and the 2bit and sizes files `<genome name>.2bit` and `.sizes`. Two different FASTA files with the same name (for example `/a/genome.fa` and `/b/genome.fa`) are therefore rejected; rename one of them.
+- A FASTA file can appear in any number of rows, as target in one pair and as query in another. The pipeline makes its 2bit and sizes files once, and one LAST index per distinct target FASTA.
+- Lowercase (soft-masked) bases are kept in the 2bit files and are excluded from the initial LAST matches (`lastdb -c`), so soft-mask repeats before running the pipeline, as for v1.0.0.
+- The sequence names are the first word of each FASTA header.
+- Aligning a genome to itself (the same file as target and query) runs, but gives a warning: UCSC self-alignments need extra steps that the pipeline does not do.
+
+## Presets
+
+The presets are the `distance` settings of CNEr's `lastal()` and `axtChain()` functions. Each preset sets the lastal options and scoring matrix (`lastal -p`) and the axtChain options and score scheme (`axtChain -scoreScheme`):
+
+| Preset   | Scoring matrix | lastal                            | axtChain                           |
+| -------- | -------------- | --------------------------------- | ---------------------------------- |
+| `near`   | CNEr near      | `-a 600 -b 150 -e 3000 -s 2 -f 1` | `-minScore=5000 -linearGap=medium` |
+| `medium` | HOXD70         | `-a 400 -b 30 -e 4500 -s 2 -f 1`  | `-minScore=3000 -linearGap=medium` |
+| `far`    | HOXD55         | `-a 400 -b 30 -e 6000 -s 2 -f 1`  | `-minScore=5000 -linearGap=loose`  |
+
+The matrices are in [`assets/matrices`](../assets/matrices) (`<preset>.lastal.mat` and `<preset>.axtchain.mat`); they are the matrices that CNEr 1.46.0 `scoringMatrix()` writes. The target is always indexed with `lastdb -c`.
+
+`--preset` (default `near`, the only preset of v1.0.0) sets the preset of the pairs whose `preset` value is empty.
+
+## liftOver chains
+
+With `--liftover true` (the default) the pipeline also makes UCSC liftOver chains for each pair, `<target>To<Query>.over.chain.gz` (the first letter of the query name is capitalised, as in UCSC file names such as `hg38ToMm10.over.chain.gz`). They are the chains of the syntenic net, made as in UCSC `doBlastzChainNet.pl`:
+
+```bash
+netChainSubset -verbose=0 T_Q.noClass.net T_Q.all.chain stdout | chainStitchId stdin T_Q.over.chain
+```
+
+They lift coordinates from the target genome to the query genome with UCSC `liftOver`. Use `--liftover false` to skip them.
+
+## lastal threads and reproducibility
+
+The nf-core LAST_LASTAL module runs `lastal -P <task.cpus>`. The pipeline sets `cpus = 1` for LAST_LASTAL (in `conf/base.config`), which is what v1.0.0 did (CNEr `mc.cores = 1`), because more threads make the results depend on the run:
+
+- With `-P` > 1, lastal writes the alignments of different query sequences in a different order in every run. The alignments themselves are the same: sorted, the MAF records of `-P 1` and `-P 4` are identical, and the alignments of each query sequence stay together and in the same order.
+- The chaining steps depend on that order. On the yeast test pair, a `-P 4` MAF gave the same set of chains as `-P 1`, but with different chain IDs and a different order of equal-scoring chains, and chainNet then picked different chains, so the nets and axt files differed too. Two `-P 4` runs also differed from each other.
+
+The number of threads for `lastdb` does not change the alignments: on the yeast pair, indexes made with 1, 2, 4 and 8 threads (whose `.suf` files differ) gave byte-identical MAF files.
+
+If lastal is too slow for large genomes, you can raise its threads in a custom config, at the cost of reproducibility:
+
+```groovy title="lastal_threads.config"
+process {
+    withName: 'LAST_LASTAL' {
+        cpus = 16
+    }
+}
+```
+
+## Test profiles
+
+- `-profile test` runs the v1.0.0 test pair: _S. cerevisiae_ (target) and _S. eubayanus_ (query), preset `near`. The FASTA files are downloaded from the v1.0.0 commit on GitHub; identical copies are in `tests/data/yeast/`. The outputs match the v1.0.0 checksums in `tests/data/yeast/v1.0.0_md5.txt`.
+- `-profile test_full` runs the same pair with each preset, and the reverse pair (_S. eubayanus_ as target). It checks that genome files and LAST indexes are shared between pairs.
+
+The nf-test tests (`nf-test test`) use the copies in `tests/data/` and run offline.
 
 ## Running the pipeline
 
 The typical command for running the pipeline is as follows:
 
 ```bash
-nextflow run da-bar/wgpa --input ./samplesheet.csv --outdir ./results  -profile docker
+nextflow run da-bar/whole_genome_pairwise_alignment -r dev --input ./samplesheet.csv --outdir ./results -profile docker
 ```
+
+(`da-bar/wgpa` is the pipeline name; the GitHub repository is `da-bar/whole_genome_pairwise_alignment`. You can also run a local clone with `nextflow run /path/to/whole_genome_pairwise_alignment ...`.)
 
 This will launch the pipeline with the `docker` configuration profile. See below for more information about profiles.
 
@@ -79,7 +119,7 @@ Pipeline settings can be provided in a `yaml` or `json` file via `-params-file <
 The above pipeline run specified with a params file in yaml format:
 
 ```bash
-nextflow run da-bar/wgpa -profile docker -params-file params.yaml
+nextflow run da-bar/whole_genome_pairwise_alignment -r dev -profile docker -params-file params.yaml
 ```
 
 with:
@@ -97,14 +137,14 @@ You can also generate such `YAML`/`JSON` files via [nf-core/launch](https://nf-c
 When you run the above command, Nextflow automatically pulls the pipeline code from GitHub and stores it as a cached version. When running the pipeline after this, it will always use the cached version if available - even if the pipeline has been updated since. To make sure that you're running the latest version of the pipeline, make sure that you regularly update the cached version of the pipeline:
 
 ```bash
-nextflow pull da-bar/wgpa
+nextflow pull da-bar/whole_genome_pairwise_alignment
 ```
 
 ### Reproducibility
 
 It is a good idea to specify the pipeline version when running the pipeline on your data. This ensures that a specific version of the pipeline code and software are used when you run your pipeline. If you keep using the same tag, you'll be running the same version of the pipeline, even if there have been changes to the code since.
 
-First, go to the [da-bar/wgpa releases page](https://github.com/da-bar/wgpa/releases) and find the latest pipeline version - numeric only (eg. `1.3.1`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.3.1`. Of course, you can switch to another version by changing the number after the `-r` flag.
+First, go to the [da-bar/wgpa releases page](https://github.com/da-bar/whole_genome_pairwise_alignment/releases) and find the latest pipeline version - numeric only (eg. `1.3.1`). Then specify this when running the pipeline with `-r` (one hyphen) - eg. `-r 1.3.1`. Of course, you can switch to another version by changing the number after the `-r` flag.
 
 This version number will be logged in reports when you run the pipeline, so that you'll know what you used when you look back in the future.
 
@@ -135,8 +175,10 @@ They are loaded in sequence, so later profiles can overwrite earlier profiles.
 If `-profile` is not specified, the pipeline will run locally and expect all software to be installed and available on the `PATH`. This is _not_ recommended, since it can lead to different results on different machines dependent on the computer environment.
 
 - `test`
-  - A profile with a complete configuration for automated testing
+  - A profile with a complete configuration for automated testing: the v1.0.0 yeast pair (see [Test profiles](#test-profiles))
   - Includes links to test data so needs no other parameters
+- `test_full`
+  - The yeast pair with all three presets, and the reverse pair
 - `docker`
   - A generic configuration profile to be used with [Docker](https://docker.com/)
 - `singularity`
