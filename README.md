@@ -1,5 +1,7 @@
 # Whole Genome Pairwise Alignment Pipeline
 
+> **Development has moved to [da-bar/wgpa](https://github.com/da-bar/wgpa).** Version 2, an nf-core-style rewrite that reproduces v1.0.0 and adds liftOver chains, continues there. This repository keeps v1: the code that produced the alignments of the carp developmental regulatory atlas, released as [v1.0.0](https://github.com/da-bar/whole_genome_pairwise_alignment/releases/tag/v1.0.0) (DOI [10.5281/zenodo.22958658](https://doi.org/10.5281/zenodo.22958658)).
+
 ## Introduction
 
 This pipeline is a comprehensive tool for whole genome pairwise alignment using `lastal`. It is designed to facilitate alignment, chaining, and netting of genomic data. The primary objective is to provide an efficient and user-friendly approach to comparative genomics, specifically for aligning entire genomes.
